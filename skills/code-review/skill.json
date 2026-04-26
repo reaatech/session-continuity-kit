@@ -1,0 +1,191 @@
+{
+  "name": "code-review",
+  "version": "1.0.0",
+  "description": "Review code for quality, consistency, and adherence to project standards",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "review",
+  "triggers": [
+    "review code",
+    "code review",
+    "check code quality",
+    "review pull request",
+    "analyze code",
+    "quality check"
+  ],
+  "context": {
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "standards": [
+      "No 'any' types in public API",
+      "100% test coverage for core logic",
+      "All public APIs must have JSDoc with examples",
+      "Use custom error classes",
+      "Follow existing code patterns"
+    ]
+  },
+  "checklist": [
+    {
+      "category": "Type Safety",
+      "items": [
+        "No 'any' types in public API",
+        "All function parameters have explicit types",
+        "Return types are explicitly defined",
+        "Generics are properly constrained",
+        "Union types are used appropriately",
+        "Null/undefined handling is explicit"
+      ]
+    },
+    {
+      "category": "Code Quality",
+      "items": [
+        "Functions are small and focused",
+        "No code duplication",
+        "Meaningful variable and function names",
+        "No magic numbers or strings",
+        "Proper error handling",
+        "No console.log in production code",
+        "Async operations are properly handled"
+      ]
+    },
+    {
+      "category": "Architecture",
+      "items": [
+        "Follows layered architecture",
+        "Dependency inversion is maintained",
+        "Single responsibility principle",
+        "Open/closed principle",
+        "No circular dependencies",
+        "Proper separation of concerns"
+      ]
+    },
+    {
+      "category": "Testing",
+      "items": [
+        "Unit tests cover all code paths",
+        "Edge cases are tested",
+        "Error scenarios are tested",
+        "Tests are isolated and independent",
+        "Test names are descriptive",
+        "No test interdependencies"
+      ]
+    },
+    {
+      "category": "Documentation",
+      "items": [
+        "All public APIs have JSDoc",
+        "JSDoc includes parameter descriptions",
+        "JSDoc includes return value descriptions",
+        "JSDoc includes usage examples",
+        "Complex logic has inline comments",
+        "README is updated for user-facing changes"
+      ]
+    },
+    {
+      "category": "Performance",
+      "items": [
+        "No unnecessary computations",
+        "Token counts are cached where appropriate",
+        "Database queries are optimized",
+        "No N+1 query problems",
+        "Large datasets are handled efficiently",
+        "Memory usage is reasonable"
+      ]
+    },
+    {
+      "category": "Security",
+      "items": [
+        "Input validation is present",
+        "No SQL/NoSQL injection vulnerabilities",
+        "Sensitive data is handled appropriately",
+        "No hardcoded credentials",
+        "Error messages don't leak sensitive information"
+      ]
+    },
+    {
+      "category": "Consistency",
+      "items": [
+        "Follows existing code style",
+        "Uses project conventions",
+        "Consistent naming patterns",
+        "Consistent error handling patterns",
+        "Consistent import/export patterns"
+      ]
+    }
+  ],
+  "reviewProcess": [
+    {
+      "step": 1,
+      "action": "Understand the change",
+      "description": "Read the PR description, linked issues, and understand the context"
+    },
+    {
+      "step": 2,
+      "action": "Review the diff",
+      "description": "Go through each changed file and understand the modifications"
+    },
+    {
+      "step": 3,
+      "action": "Check against checklist",
+      "description": "Systematically check each item in the review checklist"
+    },
+    {
+      "step": 4,
+      "action": "Run tests",
+      "description": "Ensure all tests pass and coverage requirements are met"
+    },
+    {
+      "step": 5,
+      "action": "Provide feedback",
+      "description": "Leave constructive comments with specific suggestions"
+    },
+    {
+      "step": 6,
+      "action": "Verify fixes",
+      "description": "Review the updated code after changes are made"
+    }
+  ],
+  "automatedChecks": {
+    "preReview": [
+      {
+        "command": "pnpm type-check",
+        "description": "TypeScript compilation must succeed"
+      },
+      {
+        "command": "pnpm lint",
+        "description": "ESLint must pass with no errors"
+      },
+      {
+        "command": "pnpm format:check",
+        "description": "Prettier formatting must be correct"
+      },
+      {
+        "command": "pnpm test",
+        "description": "All tests must pass"
+      },
+      {
+        "command": "pnpm test:coverage",
+        "description": "Coverage must meet thresholds"
+      }
+    ]
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "checklist-complete",
+        "description": "Verify all checklist items are addressed"
+      },
+      {
+        "type": "automated-checks-pass",
+        "description": "Verify all automated checks pass"
+      },
+      {
+        "type": "feedback-provided",
+        "description": "Verify constructive feedback is provided for issues"
+      },
+      {
+        "type": "no-blocking-issues",
+        "description": "Verify no blocking issues remain before merge"
+      }
+    ]
+  }
+}

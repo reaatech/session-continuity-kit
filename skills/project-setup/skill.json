@@ -1,0 +1,85 @@
+{
+  "name": "project-setup",
+  "version": "1.0.0",
+  "description": "Initialize project structure and configuration for session-continuity-kit",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "setup",
+  "triggers": [
+    "set up the project",
+    "initialize the monorepo",
+    "create project structure",
+    "configure pnpm workspaces",
+    "project setup"
+  ],
+  "context": {
+    "projectName": "session-continuity-kit",
+    "packageManager": "pnpm",
+    "language": "TypeScript",
+    "minNodeVersion": "18.0.0",
+    "typescriptVersion": "^5.3.0"
+  },
+  "tasks": [
+    {
+      "id": "create-root-files",
+      "description": "Create root configuration files",
+      "files": [
+        "package.json",
+        "pnpm-workspace.yaml",
+        "tsconfig.base.json",
+        "turbo.json",
+        ".editorconfig",
+        ".gitignore",
+        ".npmrc"
+      ]
+    },
+    {
+      "id": "create-packages",
+      "description": "Create package directories with base structure",
+      "packages": [
+        "core",
+        "storage-firestore",
+        "storage-dynamodb",
+        "storage-redis",
+        "storage-memory",
+        "tokenizers"
+      ]
+    },
+    {
+      "id": "create-examples-dir",
+      "description": "Create examples directory structure"
+    },
+    {
+      "id": "create-tests-dir",
+      "description": "Create tests directory structure"
+    },
+    {
+      "id": "configure-ci",
+      "description": "Set up GitHub Actions CI workflow"
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "file-exists",
+        "path": "package.json"
+      },
+      {
+        "type": "file-exists",
+        "path": "pnpm-workspace.yaml"
+      },
+      {
+        "type": "file-exists",
+        "path": "tsconfig.base.json"
+      },
+      {
+        "type": "directory-exists",
+        "path": "packages"
+      },
+      {
+        "type": "pnpm-install",
+        "description": "Verify pnpm install succeeds"
+      }
+    ]
+  }
+}

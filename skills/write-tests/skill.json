@@ -1,0 +1,136 @@
+{
+  "name": "write-tests",
+  "version": "1.0.0",
+  "description": "Generate comprehensive test suites for session-continuity-kit",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "testing",
+  "triggers": [
+    "write tests",
+    "create test suite",
+    "generate unit tests",
+    "generate integration tests",
+    "generate e2e tests",
+    "add test coverage"
+  ],
+  "context": {
+    "framework": "Vitest",
+    "coverageTarget": "100% for core logic",
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md"]
+  },
+  "tasks": [
+    {
+      "id": "unit-tests-core",
+      "description": "Create unit tests for core classes",
+      "files": [
+        "packages/core/tests/SessionManager.test.ts",
+        "packages/core/tests/MessageWindow.test.ts",
+        "packages/core/tests/TokenBudget.test.ts",
+        "packages/core/tests/SessionRepository.test.ts"
+      ],
+      "coverage": ["All public methods", "Error handling paths", "Edge cases", "Type safety"]
+    },
+    {
+      "id": "unit-tests-compression",
+      "description": "Create unit tests for compression strategies",
+      "files": [
+        "packages/core/tests/SlidingWindowStrategy.test.ts",
+        "packages/core/tests/SummarizationStrategy.test.ts",
+        "packages/core/tests/HybridStrategy.test.ts"
+      ],
+      "testScenarios": [
+        "Empty message list",
+        "Single message",
+        "Messages within budget",
+        "Messages exceeding budget",
+        "System messages preservation",
+        "Token counting accuracy",
+        "Compression result validation"
+      ]
+    },
+    {
+      "id": "integration-tests-adapters",
+      "description": "Create integration tests for storage adapters",
+      "files": [
+        "packages/storage-memory/tests/MemoryAdapter.test.ts",
+        "packages/storage-firestore/tests/FirestoreAdapter.test.ts",
+        "packages/storage-dynamodb/tests/DynamoDBAdapter.test.ts",
+        "packages/storage-redis/tests/RedisAdapter.test.ts"
+      ],
+      "testScenarios": [
+        "Session CRUD operations",
+        "Message CRUD operations",
+        "Query operations with filters",
+        "TTL handling",
+        "Health checks",
+        "Connection lifecycle",
+        "Error handling",
+        "Concurrent operations"
+      ]
+    },
+    {
+      "id": "e2e-tests-workflows",
+      "description": "Create end-to-end tests for complete workflows",
+      "files": [
+        "tests/e2e/session-lifecycle.test.ts",
+        "tests/e2e/compression-pipeline.test.ts",
+        "tests/e2e/agent-handoff.test.ts",
+        "tests/e2e/multi-participant.test.ts"
+      ],
+      "testScenarios": [
+        "Complete session lifecycle (create → messages → end)",
+        "Compression pipeline with different strategies",
+        "Agent handoff mid-session",
+        "Multi-participant sessions",
+        "Session expiration and cleanup",
+        "Token budget enforcement",
+        "Error recovery"
+      ]
+    },
+    {
+      "id": "test-utilities",
+      "description": "Create test utilities and fixtures",
+      "files": [
+        "tests/fixtures/session-factories.ts",
+        "tests/fixtures/message-factories.ts",
+        "tests/helpers/mock-storage-adapter.ts",
+        "tests/helpers/mock-token-counter.ts",
+        "tests/helpers/test-utils.ts"
+      ]
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "test-files-exist",
+        "description": "Verify all test files are created"
+      },
+      {
+        "type": "test-coverage",
+        "description": "Verify 100% test coverage for core logic",
+        "threshold": 100
+      },
+      {
+        "type": "all-tests-pass",
+        "description": "Verify all tests pass",
+        "command": "pnpm test"
+      },
+      {
+        "type": "test-isolation",
+        "description": "Verify tests can run in any order"
+      },
+      {
+        "type": "no-console-log",
+        "description": "Verify no console.log in production code"
+      },
+      {
+        "type": "test-descriptions",
+        "description": "Verify all tests have clear descriptions"
+      },
+      {
+        "type": "edge-case-coverage",
+        "description": "Verify edge cases are covered"
+      }
+    ]
+  }
+}

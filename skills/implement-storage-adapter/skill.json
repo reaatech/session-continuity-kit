@@ -1,0 +1,224 @@
+{
+  "name": "implement-storage-adapter",
+  "version": "1.0.0",
+  "description": "Build storage adapter implementations for session persistence",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "implementation",
+  "triggers": [
+    "implement storage adapter",
+    "create storage adapter",
+    "build firestore adapter",
+    "build dynamodb adapter",
+    "build redis adapter",
+    "build memory adapter",
+    "implement persistence"
+  ],
+  "context": {
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"],
+    "adapters": [
+      {
+        "name": "memory",
+        "package": "storage-memory",
+        "priority": 1,
+        "description": "In-memory adapter for development and testing"
+      },
+      {
+        "name": "firestore",
+        "package": "storage-firestore",
+        "priority": 2,
+        "description": "Firestore adapter with TTL support"
+      },
+      {
+        "name": "dynamodb",
+        "package": "storage-dynamodb",
+        "priority": 3,
+        "description": "DynamoDB adapter with single-table design"
+      },
+      {
+        "name": "redis",
+        "package": "storage-redis",
+        "priority": 4,
+        "description": "Redis adapter with native TTL"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "memory-adapter",
+      "description": "Implement MemoryAdapter for development and testing",
+      "package": "packages/storage-memory",
+      "file": "packages/storage-memory/src/MemoryAdapter.ts",
+      "class": "MemoryAdapter",
+      "implements": "IStorageAdapter",
+      "features": [
+        "In-memory storage using Maps",
+        "Optional TTL simulation with setTimeout",
+        "No persistence",
+        "Fast for testing"
+      ],
+      "methods": [
+        "createSession(session): Promise<Session>",
+        "getSession(id): Promise<Session | null>",
+        "updateSession(id, updates): Promise<Session>",
+        "deleteSession(id): Promise<void>",
+        "listSessions(filters?): Promise<Session[]>",
+        "addMessage(sessionId, message): Promise<Message>",
+        "getMessages(sessionId, options?): Promise<Message[]>",
+        "updateMessage(sessionId, messageId, updates): Promise<Message>",
+        "deleteMessage(sessionId, messageId): Promise<void>",
+        "deleteAllMessages(sessionId): Promise<void>",
+        "getExpiredSessions(before): Promise<SessionId[]>",
+        "health(): Promise<HealthStatus>",
+        "close(): Promise<void>"
+      ]
+    },
+    {
+      "id": "firestore-adapter",
+      "description": "Implement FirestoreAdapter with TTL support",
+      "package": "packages/storage-firestore",
+      "file": "packages/storage-firestore/src/FirestoreAdapter.ts",
+      "class": "FirestoreAdapter",
+      "implements": "IStorageAdapter",
+      "features": [
+        "Subcollections for messages (sessions/{sessionId}/messages)",
+        "Firestore TTL policies for expiration",
+        "Composite indexes for efficient querying",
+        "Batch writes for multiple messages",
+        "Timestamp serialization"
+      ],
+      "dependencies": ["firebase", "@google-cloud/firestore"],
+      "methods": [
+        "createSession(session): Promise<Session>",
+        "getSession(id): Promise<Session | null>",
+        "updateSession(id, updates): Promise<Session>",
+        "deleteSession(id): Promise<void>",
+        "listSessions(filters?): Promise<Session[]>",
+        "addMessage(sessionId, message): Promise<Message>",
+        "getMessages(sessionId, options?): Promise<Message[]>",
+        "updateMessage(sessionId, messageId, updates): Promise<Message>",
+        "deleteMessage(sessionId, messageId): Promise<void>",
+        "deleteAllMessages(sessionId): Promise<void>",
+        "getExpiredSessions(before): Promise<SessionId[]>",
+        "health(): Promise<HealthStatus>",
+        "close(): Promise<void>"
+      ]
+    },
+    {
+      "id": "dynamodb-adapter",
+      "description": "Implement DynamoDBAdapter with single-table design",
+      "package": "packages/storage-dynamodb",
+      "file": "packages/storage-dynamodb/src/DynamoDBAdapter.ts",
+      "class": "DynamoDBAdapter",
+      "implements": "IStorageAdapter",
+      "features": [
+        "Single table design with GSIs",
+        "SessionById: PK=SESSION#{sessionId}, SK=META",
+        "MessagesBySession: PK=SESSION#{sessionId}, SK=MSG#{timestamp}#{messageId}",
+        "SessionsByUser GSI: PK=USER#{userId}, SK=CREATED_AT#{timestamp}",
+        "SessionsByAgent GSI: PK=AGENT#{agentId}, SK=STATUS#{status}",
+        "TTL attribute for automatic expiration",
+        "Conditional writes for optimistic locking"
+      ],
+      "dependencies": ["@aws-sdk/client-dynamodb", "@aws-sdk/lib-dynamodb"],
+      "methods": [
+        "createSession(session): Promise<Session>",
+        "getSession(id): Promise<Session | null>",
+        "updateSession(id, updates): Promise<Session>",
+        "deleteSession(id): Promise<void>",
+        "listSessions(filters?): Promise<Session[]>",
+        "addMessage(sessionId, message): Promise<Message>",
+        "getMessages(sessionId, options?): Promise<Message[]>",
+        "updateMessage(sessionId, messageId, updates): Promise<Message>",
+        "deleteMessage(sessionId, messageId): Promise<void>",
+        "deleteAllMessages(sessionId): Promise<void>",
+        "getExpiredSessions(before): Promise<SessionId[]>",
+        "health(): Promise<HealthStatus>",
+        "close(): Promise<void>"
+      ]
+    },
+    {
+      "id": "redis-adapter",
+      "description": "Implement RedisAdapter with native TTL",
+      "package": "packages/storage-redis",
+      "file": "packages/storage-redis/src/RedisAdapter.ts",
+      "class": "RedisAdapter",
+      "implements": "IStorageAdapter",
+      "features": [
+        "Session data as JSON hashes",
+        "Messages as sorted sets (score = timestamp)",
+        "Native TTL on session keys",
+        "Pub/sub for real-time updates (optional)",
+        "Connection pooling",
+        "Automatic reconnection",
+        "listSessions uses SCAN with client-side filtering (document limitation)"
+      ],
+      "dependencies": ["redis"],
+      "methods": [
+        "createSession(session): Promise<Session>",
+        "getSession(id): Promise<Session | null>",
+        "updateSession(id, updates): Promise<Session>",
+        "deleteSession(id): Promise<void>",
+        "listSessions(filters?): Promise<Session[]>",
+        "addMessage(sessionId, message): Promise<Message>",
+        "getMessages(sessionId, options?): Promise<Message[]>",
+        "updateMessage(sessionId, messageId, updates): Promise<Message>",
+        "deleteMessage(sessionId, messageId): Promise<void>",
+        "deleteAllMessages(sessionId): Promise<void>",
+        "getExpiredSessions(before): Promise<SessionId[]>",
+        "health(): Promise<HealthStatus>",
+        "close(): Promise<void>"
+      ]
+    },
+    {
+      "id": "adapter-tests",
+      "description": "Create integration tests for each adapter",
+      "files": [
+        "packages/storage-memory/tests/MemoryAdapter.test.ts",
+        "packages/storage-firestore/tests/FirestoreAdapter.test.ts",
+        "packages/storage-dynamodb/tests/DynamoDBAdapter.test.ts",
+        "packages/storage-redis/tests/RedisAdapter.test.ts"
+      ]
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "all-files-exist",
+        "description": "Verify all adapter files are created"
+      },
+      {
+        "type": "type-check",
+        "description": "Verify TypeScript compilation succeeds for all packages"
+      },
+      {
+        "type": "interface-compliance",
+        "description": "Verify all adapters implement IStorageAdapter correctly"
+      },
+      {
+        "type": "integration-tests",
+        "description": "Verify integration tests pass for each adapter"
+      },
+      {
+        "type": "health-checks",
+        "description": "Verify health check methods work correctly"
+      },
+      {
+        "type": "ttl-handling",
+        "description": "Verify TTL handling works for each adapter"
+      },
+      {
+        "type": "no-any",
+        "description": "Verify no 'any' types in public API"
+      },
+      {
+        "type": "jsdoc",
+        "description": "Verify all public methods have JSDoc documentation"
+      },
+      {
+        "type": "error-handling",
+        "description": "Verify proper error handling and custom error classes"
+      }
+    ]
+  }
+}

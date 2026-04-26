@@ -1,0 +1,233 @@
+{
+  "name": "refactor",
+  "version": "1.0.0",
+  "description": "Refactor code for improvements while maintaining functionality",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "refactoring",
+  "triggers": [
+    "refactor code",
+    "improve code structure",
+    "clean up code",
+    "optimize performance",
+    "simplify logic",
+    "reduce complexity"
+  ],
+  "context": {
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "principles": [
+      "Maintain all existing tests",
+      "No behavior changes",
+      "Improve code quality",
+      "Reduce technical debt"
+    ]
+  },
+  "refactoringTypes": [
+    {
+      "type": "extract-method",
+      "description": "Extract a block of code into a separate method",
+      "whenToUse": [
+        "Code duplication exists",
+        "Method is too long (>50 lines)",
+        "Logic can be reused"
+      ]
+    },
+    {
+      "type": "rename",
+      "description": "Rename variables, methods, or classes for clarity",
+      "whenToUse": [
+        "Names are unclear or misleading",
+        "Naming conventions have changed",
+        "Better name is discovered"
+      ]
+    },
+    {
+      "type": "extract-class",
+      "description": "Extract a group of related methods into a new class",
+      "whenToUse": [
+        "Class has too many responsibilities",
+        "Group of methods always operate together",
+        "Single responsibility principle violated"
+      ]
+    },
+    {
+      "type": "move-method",
+      "description": "Move a method to the class where it belongs",
+      "whenToUse": [
+        "Method uses features of another class more",
+        "Method is more related to another class",
+        "Reducing coupling"
+      ]
+    },
+    {
+      "type": "replace-conditionals",
+      "description": "Replace complex conditionals with polymorphism or strategy pattern",
+      "whenToUse": [
+        "Long if-else chains",
+        "Switch statements on type codes",
+        "Similar logic with small variations"
+      ]
+    },
+    {
+      "type": "simplify-conditionals",
+      "description": "Simplify complex conditional expressions",
+      "whenToUse": ["Nested conditionals", "Redundant conditions", "Complex boolean logic"]
+    },
+    {
+      "type": "introduce-parameter-object",
+      "description": "Replace multiple parameters with an object",
+      "whenToUse": [
+        "Method has many parameters",
+        "Parameters are often passed together",
+        "Improving method signature clarity"
+      ]
+    },
+    {
+      "type": "preserve-whole-object",
+      "description": "Instead of passing individual values, pass the whole object",
+      "whenToUse": [
+        "Multiple values from same object are passed",
+        "Object is available at call site",
+        "Reducing parameter count"
+      ]
+    }
+  ],
+  "refactorProcess": [
+    {
+      "step": 1,
+      "action": "Identify code smell",
+      "description": "Analyze code to identify areas that need improvement",
+      "checks": [
+        "Long methods",
+        "Large classes",
+        "Duplicate code",
+        "Complex conditionals",
+        "Poor naming",
+        "Tight coupling"
+      ]
+    },
+    {
+      "step": 2,
+      "action": "Ensure tests pass",
+      "description": "Run all tests to establish a working baseline",
+      "command": "pnpm test"
+    },
+    {
+      "step": 3,
+      "action": "Plan the refactoring",
+      "description": "Determine the specific refactoring technique and steps",
+      "considerations": [
+        "Impact on existing code",
+        "Test coverage",
+        "Backward compatibility",
+        "Performance implications"
+      ]
+    },
+    {
+      "step": 4,
+      "action": "Execute refactoring",
+      "description": "Apply the refactoring in small, incremental steps",
+      "bestPractices": [
+        "One change at a time",
+        "Run tests after each change",
+        "Commit frequently",
+        "Keep changes focused"
+      ]
+    },
+    {
+      "step": 5,
+      "action": "Verify tests pass",
+      "description": "Run all tests to ensure no functionality was broken",
+      "command": "pnpm test"
+    },
+    {
+      "step": 6,
+      "action": "Review and iterate",
+      "description": "Review the changes and continue if more refactoring is needed"
+    }
+  ],
+  "codeSmells": [
+    {
+      "smell": "Long Method",
+      "indicators": ["Method > 50 lines", "Many local variables", "Hard to understand"],
+      "solution": "Extract Method"
+    },
+    {
+      "smell": "Large Class",
+      "indicators": [
+        "Too many methods",
+        "Too many instance variables",
+        "Multiple responsibilities"
+      ],
+      "solution": "Extract Class"
+    },
+    {
+      "smell": "Duplicate Code",
+      "indicators": ["Same code in multiple places", "Similar logic with minor variations"],
+      "solution": "Extract Method, Extract Class, or Template Method"
+    },
+    {
+      "smell": "Long Parameter List",
+      "indicators": ["Method has > 4 parameters", "Parameters often passed together"],
+      "solution": "Introduce Parameter Object"
+    },
+    {
+      "smell": "Feature Envy",
+      "indicators": ["Method accesses another object's data more than its own"],
+      "solution": "Move Method"
+    },
+    {
+      "smell": "Data Clumps",
+      "indicators": ["Groups of data that appear together frequently"],
+      "solution": "Extract Class or Introduce Parameter Object"
+    },
+    {
+      "smell": "Primitive Obsession",
+      "indicators": ["Overuse of primitives instead of small objects"],
+      "solution": "Replace Data Value with Class"
+    },
+    {
+      "smell": "Switch Statements",
+      "indicators": ["Complex switch/case or if-else chains based on type"],
+      "solution": "Replace with Polymorphism or Strategy"
+    },
+    {
+      "smell": "Speculative Generality",
+      "indicators": ["Unused parameters", "Dead code", "Over-engineered abstractions"],
+      "solution": "Collapse Hierarchical Inheritance, Remove Parameters"
+    },
+    {
+      "smell": "Dead Code",
+      "indicators": ["Unreachable code", "Unused variables", "Unused methods"],
+      "solution": "Remove Dead Code"
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "tests-pass-before",
+        "description": "Verify all tests pass before starting refactoring"
+      },
+      {
+        "type": "tests-pass-after",
+        "description": "Verify all tests pass after refactoring"
+      },
+      {
+        "type": "no-behavior-change",
+        "description": "Verify no functional behavior has changed"
+      },
+      {
+        "type": "coverage-maintained",
+        "description": "Verify test coverage is maintained or improved"
+      },
+      {
+        "type": "code-quality-improved",
+        "description": "Verify code quality metrics have improved"
+      },
+      {
+        "type": "type-check-passes",
+        "description": "Verify TypeScript compilation succeeds"
+      }
+    ]
+  }
+}

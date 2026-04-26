@@ -1,0 +1,134 @@
+{
+  "name": "implement-session-manager",
+  "version": "1.0.0",
+  "description": "Build the SessionManager class and supporting components",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "implementation",
+  "triggers": [
+    "implement session manager",
+    "create SessionManager class",
+    "build session management",
+    "implement message window",
+    "implement token budget",
+    "create repository pattern"
+  ],
+  "context": {
+    "package": "core",
+    "directory": "packages/core/src/session",
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"]
+  },
+  "tasks": [
+    {
+      "id": "message-window",
+      "description": "Implement MessageWindow class for managing message windows within token budget",
+      "file": "packages/core/src/session/MessageWindow.ts",
+      "class": "MessageWindow",
+      "methods": [
+        "getFittedMessages(messages: Message[]): Message[]",
+        "getTokenUsage(messages: Message[]): TokenCountResult"
+      ],
+      "note": "MessageWindow is stateless. It does NOT store messages or have an addMessage method. Budget enforcement and message addition belong in SessionManager."
+    },
+    {
+      "id": "token-budget",
+      "description": "Implement TokenBudget class for managing token budget calculations",
+      "file": "packages/core/src/session/TokenBudget.ts",
+      "class": "TokenBudget",
+      "methods": [
+        "wouldExceedBudget(currentTokens: number, additionalTokens: number): boolean",
+        "getAvailableTokens(usedTokens: number): number",
+        "getStatus(usedTokens: number): BudgetStatus"
+      ]
+    },
+    {
+      "id": "session-repository",
+      "description": "Implement SessionRepository for data access abstraction",
+      "file": "packages/core/src/repository/SessionRepository.ts",
+      "class": "SessionRepository",
+      "methods": [
+        "createSession(session: Session): Promise<Session>",
+        "getSession(id: SessionId): Promise<Session | null>",
+        "updateSession(id: SessionId, updates: Partial<Session>): Promise<Session>",
+        "deleteSession(id: SessionId): Promise<void>",
+        "listSessions(filters?: SessionFilters): Promise<Session[]>",
+        "addMessage(sessionId: SessionId, message: Message): Promise<Message>",
+        "getMessages(sessionId: SessionId, options?: MessageQueryOptions): Promise<Message[]>",
+        "updateMessage(sessionId: SessionId, messageId: MessageId, updates: Partial<Message>): Promise<Message>",
+        "deleteMessage(sessionId: SessionId, messageId: MessageId): Promise<void>",
+        "deleteAllMessages(sessionId: SessionId): Promise<void>"
+      ]
+    },
+    {
+      "id": "session-manager",
+      "description": "Implement SessionManager as the main facade for session operations",
+      "file": "packages/core/src/session/SessionManager.ts",
+      "class": "SessionManager",
+      "methods": [
+        "createSession(options?: CreateSessionOptions): Promise<Session> (sets schemaVersion: 1)",
+        "getSession(id: SessionId): Promise<Session>",
+        "updateSession(id: SessionId, updates: Partial<Session>): Promise<Session>",
+        "endSession(id: SessionId): Promise<void>",
+        "deleteSession(id: SessionId): Promise<void>",
+        "addMessage(sessionId: SessionId, message: CreateMessageOptions): Promise<Message>",
+        "getMessages(sessionId: SessionId, options?: MessageQueryOptions): Promise<Message[]>",
+        "getConversationContext(sessionId: SessionId): Promise<Message[]>",
+        "addParticipant(sessionId: SessionId, participant: CreateParticipantOptions): Promise<Participant>",
+        "removeParticipant(sessionId: SessionId, participantId: string): Promise<void>",
+        "getParticipants(sessionId: SessionId): Promise<Participant[]>",
+        "handoffToAgent(sessionId: SessionId, agentId: string, context?: HandoffContext): Promise<void>",
+        "compressContext(sessionId: SessionId, strategy?: CompressionStrategyType): Promise<CompressionResult>",
+        "cleanupExpiredSessions(): Promise<number>",
+        "on(event: SessionEvent, handler: EventHandler): void",
+        "off(event: SessionEvent, handler: EventHandler): void",
+        "health(): Promise<HealthStatus>",
+        "close(): Promise<void>"
+      ]
+    },
+    {
+      "id": "session-index",
+      "description": "Create index.ts to export session management classes",
+      "file": "packages/core/src/session/index.ts"
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/session/MessageWindow.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/session/TokenBudget.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/repository/SessionRepository.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/session/SessionManager.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/session/index.ts"
+      },
+      {
+        "type": "type-check",
+        "description": "Verify TypeScript compilation succeeds with no errors"
+      },
+      {
+        "type": "test-coverage",
+        "description": "Verify >80% test coverage for session management classes"
+      },
+      {
+        "type": "no-any",
+        "description": "Verify no 'any' types in public API"
+      },
+      {
+        "type": "jsdoc",
+        "description": "Verify all public methods have JSDoc documentation"
+      }
+    ]
+  }
+}

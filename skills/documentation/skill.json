@@ -1,0 +1,173 @@
+{
+  "name": "documentation",
+  "version": "1.0.0",
+  "description": "Write documentation and examples for session-continuity-kit",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "documentation",
+  "triggers": [
+    "write documentation",
+    "create documentation",
+    "write examples",
+    "create guides",
+    "update docs",
+    "write README"
+  ],
+  "context": {
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "documentationStandard": "All public APIs must have JSDoc with examples"
+  },
+  "tasks": [
+    {
+      "id": "readme",
+      "description": "Create comprehensive README.md",
+      "file": "README.md",
+      "sections": [
+        "Project overview and features",
+        "Installation instructions",
+        "Quick start guide",
+        "Core concepts (sessions, messages, compression)",
+        "Storage adapters overview",
+        "Compression strategies overview",
+        "API reference with examples",
+        "Configuration options",
+        "Contributing guidelines",
+        "License"
+      ]
+    },
+    {
+      "id": "getting-started-guide",
+      "description": "Create getting started guide",
+      "file": "docs/getting-started.md",
+      "sections": [
+        "Installation",
+        "Basic usage with in-memory adapter",
+        "Adding messages to a session",
+        "Getting conversation context",
+        "Using compression strategies",
+        "Switching to production storage"
+      ]
+    },
+    {
+      "id": "storage-adapters-guide",
+      "description": "Create storage adapters setup guide",
+      "file": "docs/storage-adapters.md",
+      "sections": [
+        "Overview of storage adapters",
+        "Firestore adapter setup and configuration",
+        "DynamoDB adapter setup and configuration",
+        "Redis adapter setup and configuration",
+        "In-memory adapter for development",
+        "Choosing the right adapter",
+        "Custom adapter implementation"
+      ]
+    },
+    {
+      "id": "compression-strategies-guide",
+      "description": "Create compression strategies guide",
+      "file": "docs/compression-strategies.md",
+      "sections": [
+        "Overview of compression strategies",
+        "Sliding window strategy (when and how to use)",
+        "Summarization strategy (when and how to use)",
+        "Hybrid strategy (when and how to use)",
+        "Configuring token budgets",
+        "Custom compression strategy implementation",
+        "Performance considerations"
+      ]
+    },
+    {
+      "id": "api-reference",
+      "description": "Create API reference documentation",
+      "file": "docs/api-reference.md",
+      "sections": [
+        "SessionManager API",
+        "MessageWindow API",
+        "TokenBudget API",
+        "CompressionStrategy API",
+        "StorageAdapter API",
+        "TokenCounter API",
+        "Event system API",
+        "Error classes"
+      ]
+    },
+    {
+      "id": "migration-guide",
+      "description": "Create migration guide from custom implementations",
+      "file": "docs/migration-guide.md",
+      "sections": [
+        "Why migrate to session-continuity-kit",
+        "Migration checklist",
+        "Mapping custom types to library types",
+        "Adapter migration strategies",
+        "Testing during migration",
+        "Rollback strategies"
+      ]
+    },
+    {
+      "id": "examples",
+      "description": "Create runnable example applications",
+      "directories": [
+        "examples/basic-usage",
+        "examples/with-firestore",
+        "examples/with-dynamodb",
+        "examples/with-redis",
+        "examples/with-compression",
+        "examples/agent-handoff",
+        "examples/multi-participant",
+        "examples/custom-adapter"
+      ],
+      "eachExampleIncludes": [
+        "package.json with dependencies",
+        "TypeScript source code",
+        "README with setup instructions",
+        "Environment configuration example"
+      ]
+    },
+    {
+      "id": "jsdoc-comments",
+      "description": "Ensure all public APIs have JSDoc documentation",
+      "scope": "All public classes, interfaces, methods, and types",
+      "requirements": [
+        "Description of purpose",
+        "Parameter descriptions",
+        "Return value description",
+        "Usage example",
+        "Throws documentation",
+        "See also references"
+      ]
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "all-files-exist",
+        "description": "Verify all documentation files are created"
+      },
+      {
+        "type": "examples-run",
+        "description": "Verify all examples run without errors"
+      },
+      {
+        "type": "jsdoc-complete",
+        "description": "Verify all public APIs have complete JSDoc"
+      },
+      {
+        "type": "code-examples-valid",
+        "description": "Verify all code examples are valid TypeScript"
+      },
+      {
+        "type": "links-valid",
+        "description": "Verify all internal links are valid"
+      },
+      {
+        "type": "spelling-grammar",
+        "description": "Verify no spelling or grammar errors"
+      },
+      {
+        "type": "readme-complete",
+        "description": "Verify README has all required sections"
+      }
+    ]
+  }
+}

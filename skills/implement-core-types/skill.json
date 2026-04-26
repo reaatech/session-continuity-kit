@@ -1,0 +1,152 @@
+{
+  "name": "implement-core-types",
+  "version": "1.0.0",
+  "description": "Create TypeScript type definitions for session-continuity-kit core",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "implementation",
+  "triggers": [
+    "implement core types",
+    "create type definitions",
+    "define TypeScript interfaces",
+    "create session types",
+    "create message types",
+    "implement core interfaces"
+  ],
+  "context": {
+    "package": "core",
+    "directory": "packages/core/src/types",
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md"]
+  },
+  "tasks": [
+    {
+      "id": "session-types",
+      "description": "Create session.ts with Session, Message, Participant types",
+      "file": "packages/core/src/types/session.ts",
+      "interfaces": [
+        "SessionId",
+        "MessageId",
+        "MessageRole",
+        "MessageContent",
+        "Participant",
+        "Message",
+        "MessageMetadata",
+        "ToolCall",
+        "ToolResult",
+        "Session",
+        "SessionStatus",
+        "SessionMetadata"
+      ]
+    },
+    {
+      "id": "token-types",
+      "description": "Create token.ts with TokenBudgetConfig, TokenCountResult, TokenCounter types",
+      "file": "packages/core/src/types/token.ts",
+      "interfaces": ["TokenBudgetConfig", "TokenCountResult", "BudgetStatus", "TokenCounter"]
+    },
+    {
+      "id": "compression-types",
+      "description": "Create compression.ts with compression strategy types",
+      "file": "packages/core/src/types/compression.ts",
+      "interfaces": [
+        "CompressionStrategyType",
+        "SummarizerService",
+        "SlidingWindowCompressionConfig",
+        "SummarizationCompressionConfig",
+        "HybridCompressionConfig",
+        "CompressionConfig",
+        "CompressionResult",
+        "ICompressionStrategy"
+      ]
+    },
+    {
+      "id": "storage-types",
+      "description": "Create storage.ts with storage adapter interface",
+      "file": "packages/core/src/types/storage.ts",
+      "interfaces": ["IStorageAdapter", "SessionFilters", "MessageQueryOptions", "HealthStatus"]
+    },
+    {
+      "id": "events-types",
+      "description": "Create events.ts with event system types",
+      "file": "packages/core/src/types/events.ts",
+      "interfaces": ["SessionEvent", "SessionEventPayload", "EventHandler"]
+    },
+    {
+      "id": "config-types",
+      "description": "Create config.ts with SessionManagerConfig, MessageWindowConfig, and creation options",
+      "file": "packages/core/src/types/config.ts",
+      "interfaces": [
+        "CreateSessionOptions",
+        "CreateMessageOptions",
+        "CreateParticipantOptions",
+        "HandoffContext",
+        "MessageWindowConfig",
+        "SessionManagerConfig",
+        "Logger"
+      ]
+    },
+    {
+      "id": "errors-types",
+      "description": "Create errors.ts with custom error classes",
+      "file": "packages/core/src/types/errors.ts",
+      "classes": [
+        "SessionError",
+        "SessionNotFoundError",
+        "TokenBudgetExceededError",
+        "StorageError",
+        "CompressionError",
+        "ValidationError",
+        "HandoffError"
+      ]
+    },
+    {
+      "id": "index-types",
+      "description": "Create index.ts to export all types",
+      "file": "packages/core/src/types/index.ts"
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/session.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/token.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/compression.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/storage.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/events.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/config.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/errors.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/types/index.ts"
+      },
+      {
+        "type": "type-check",
+        "description": "Verify TypeScript compilation succeeds with no errors"
+      },
+      {
+        "type": "no-any",
+        "description": "Verify no 'any' types in public API"
+      }
+    ]
+  }
+}

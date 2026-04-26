@@ -1,0 +1,157 @@
+{
+  "name": "implement-tokenizers",
+  "version": "1.0.0",
+  "description": "Create token counting implementations for various LLM models",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "implementation",
+  "triggers": [
+    "implement tokenizers",
+    "create token counter",
+    "build tiktoken tokenizer",
+    "build anthropic tokenizer",
+    "implement token counting",
+    "add model support"
+  ],
+  "context": {
+    "package": "tokenizers",
+    "directory": "packages/tokenizers/src",
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"]
+  },
+  "tasks": [
+    {
+      "id": "tiktoken-tokenizer",
+      "description": "Implement TiktokenTokenizer for OpenAI models",
+      "file": "packages/tokenizers/src/TiktokenTokenizer.ts",
+      "class": "TiktokenTokenizer",
+      "implements": "TokenCounter",
+      "supportedModels": [
+        "gpt-4",
+        "gpt-4-turbo",
+        "gpt-4-32k",
+        "gpt-3.5-turbo",
+        "text-davinci-003",
+        "text-embedding-ada-002"
+      ],
+      "dependencies": ["tiktoken"],
+      "methods": [
+        "count(text: string): number",
+        "countMessages(messages: Message[]): number",
+        "get model(): string",
+        "get tokenizer(): string"
+      ]
+    },
+    {
+      "id": "anthropic-tokenizer",
+      "description": "Implement AnthropicTokenizer for Claude models",
+      "file": "packages/tokenizers/src/AnthropicTokenizer.ts",
+      "class": "AnthropicTokenizer",
+      "implements": "TokenCounter",
+      "supportedModels": [
+        "claude-3-opus",
+        "claude-3-sonnet",
+        "claude-3-haiku",
+        "claude-2.1",
+        "claude-2.0",
+        "claude-instant-1.2"
+      ],
+      "dependencies": ["@anthropic-ai/tokenizer"],
+      "methods": [
+        "count(text: string): number",
+        "countMessages(messages: Message[]): number",
+        "get model(): string",
+        "get tokenizer(): string"
+      ]
+    },
+    {
+      "id": "estimate-tokenizer",
+      "description": "Implement EstimateTokenizer for fast approximate counting",
+      "file": "packages/tokenizers/src/EstimateTokenizer.ts",
+      "class": "EstimateTokenizer",
+      "implements": "TokenCounter",
+      "description_detail": "Fast estimation using character count (~4 chars per token for English)",
+      "methods": [
+        "count(text: string): number",
+        "countMessages(messages: Message[]): number",
+        "get model(): string",
+        "get tokenizer(): string"
+      ]
+    },
+    {
+      "id": "tokenizer-factory",
+      "description": "Implement TokenizerFactory for creating tokenizers by model name",
+      "file": "packages/tokenizers/src/TokenizerFactory.ts",
+      "class": "TokenizerFactory",
+      "methods": [
+        "create(model: string): TokenCounter",
+        "register(name: string, tokenizer: TokenCounter): void",
+        "getSupportedModels(): string[]"
+      ]
+    },
+    {
+      "id": "tokenizers-index",
+      "description": "Create index.ts to export tokenizer classes",
+      "file": "packages/tokenizers/src/index.ts"
+    },
+    {
+      "id": "tokenizer-tests",
+      "description": "Create comprehensive tests for tokenizers",
+      "files": [
+        "packages/tokenizers/tests/TiktokenTokenizer.test.ts",
+        "packages/tokenizers/tests/AnthropicTokenizer.test.ts",
+        "packages/tokenizers/tests/EstimateTokenizer.test.ts",
+        "packages/tokenizers/tests/TokenizerFactory.test.ts"
+      ],
+      "testCases": [
+        "Accuracy tests against known token counts",
+        "Edge cases (empty strings, unicode, special characters)",
+        "Message formatting overhead",
+        "Factory registration and creation"
+      ]
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "file-exists",
+        "path": "packages/tokenizers/src/TiktokenTokenizer.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/tokenizers/src/AnthropicTokenizer.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/tokenizers/src/EstimateTokenizer.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/tokenizers/src/TokenizerFactory.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/tokenizers/src/index.ts"
+      },
+      {
+        "type": "type-check",
+        "description": "Verify TypeScript compilation succeeds with no errors"
+      },
+      {
+        "type": "accuracy-tests",
+        "description": "Verify tokenizer accuracy against known token counts"
+      },
+      {
+        "type": "performance-tests",
+        "description": "Verify tokenizers meet performance requirements (<1ms for typical messages)"
+      },
+      {
+        "type": "no-any",
+        "description": "Verify no 'any' types in public API"
+      },
+      {
+        "type": "jsdoc",
+        "description": "Verify all public methods have JSDoc documentation with examples"
+      }
+    ]
+  }
+}

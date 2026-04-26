@@ -1,0 +1,127 @@
+{
+  "name": "implement-compression-strategies",
+  "version": "1.0.0",
+  "description": "Create compression strategy implementations for context management",
+  "author": "reaatech",
+  "license": "MIT",
+  "category": "implementation",
+  "triggers": [
+    "implement compression strategies",
+    "create compression strategy",
+    "build sliding window strategy",
+    "build summarization strategy",
+    "build hybrid strategy",
+    "implement context compression"
+  ],
+  "context": {
+    "package": "core",
+    "directory": "packages/core/src/compression",
+    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"]
+  },
+  "tasks": [
+    {
+      "id": "compression-base",
+      "description": "Create compression utilities and SummarizerService interface",
+      "file": "packages/core/src/compression/CompressionStrategy.ts",
+      "note": "Strategies implement ICompressionStrategy directly; no abstract base class needed. Export shared helpers like calculateMessageTokens and preserveSystemMessages here."
+    },
+    {
+      "id": "sliding-window-strategy",
+      "description": "Implement SlidingWindowStrategy that keeps recent messages within budget",
+      "file": "packages/core/src/compression/SlidingWindowStrategy.ts",
+      "class": "SlidingWindowStrategy",
+      "implements": "ICompressionStrategy",
+      "algorithm": "Keep system messages, slide window from newest to oldest until budget reached",
+      "methods": [
+        "compress(messages: Message[], config: CompressionConfig, tokenCounter: TokenCounter): Promise<CompressionResult>",
+        "get type(): CompressionStrategyType"
+      ]
+    },
+    {
+      "id": "summarization-strategy",
+      "description": "Implement SummarizationStrategy that uses LLM to summarize old messages",
+      "file": "packages/core/src/compression/SummarizationStrategy.ts",
+      "class": "SummarizationStrategy",
+      "implements": "ICompressionStrategy",
+      "algorithm": "Identify old messages, call LLM to summarize, replace with summary message",
+      "dependencies": ["SummarizerService interface for LLM calls"],
+      "methods": [
+        "compress(messages: Message[], config: CompressionConfig, tokenCounter: TokenCounter): Promise<CompressionResult>",
+        "get type(): CompressionStrategyType"
+      ]
+    },
+    {
+      "id": "hybrid-strategy",
+      "description": "Implement HybridStrategy combining sliding window and summarization",
+      "file": "packages/core/src/compression/HybridStrategy.ts",
+      "class": "HybridStrategy",
+      "implements": "ICompressionStrategy",
+      "algorithm": "Keep last N messages as-is, summarize everything before that",
+      "dependencies": ["SummarizerService interface for LLM calls"],
+      "methods": [
+        "compress(messages: Message[], config: CompressionConfig, tokenCounter: TokenCounter): Promise<CompressionResult>",
+        "get type(): CompressionStrategyType"
+      ]
+    },
+    {
+      "id": "summarizer-service",
+      "description": "Create SummarizerService interface and mock implementation",
+      "file": "packages/core/src/compression/SummarizerService.ts",
+      "interface": "SummarizerService",
+      "methods": ["summarize(messages: Message[], prompt?: string): Promise<string>"]
+    },
+    {
+      "id": "compression-index",
+      "description": "Create index.ts to export compression classes",
+      "file": "packages/core/src/compression/index.ts"
+    }
+  ],
+  "validation": {
+    "checks": [
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/CompressionStrategy.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/SlidingWindowStrategy.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/SummarizationStrategy.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/HybridStrategy.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/SummarizerService.ts"
+      },
+      {
+        "type": "file-exists",
+        "path": "packages/core/src/compression/index.ts"
+      },
+      {
+        "type": "type-check",
+        "description": "Verify TypeScript compilation succeeds with no errors"
+      },
+      {
+        "type": "test-coverage",
+        "description": "Verify >90% test coverage for compression strategies"
+      },
+      {
+        "type": "strategy-tests",
+        "description": "Verify each strategy has tests with various message sets"
+      },
+      {
+        "type": "no-any",
+        "description": "Verify no 'any' types in public API"
+      },
+      {
+        "type": "jsdoc",
+        "description": "Verify all public methods have JSDoc documentation with examples"
+      }
+    ]
+  }
+}
