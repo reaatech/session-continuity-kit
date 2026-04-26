@@ -1,0 +1,18 @@
+{
+  "name": "@session-continuity-kit/example-with-redis",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "@session-continuity-kit/core": "workspace:*",
+    "@session-continuity-kit/storage-redis": "workspace:*",
+    "@session-continuity-kit/tokenizers": "workspace:*",
+    "redis": "^4.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0"
+  }
+}
