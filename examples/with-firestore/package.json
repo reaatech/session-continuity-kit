@@ -10,7 +10,7 @@
     "@session-continuity-kit/core": "workspace:*",
     "@session-continuity-kit/storage-firestore": "workspace:*",
     "@session-continuity-kit/tokenizers": "workspace:*",
-    "@google-cloud/firestore": "^7.0.0"
+    "@google-cloud/firestore": "^8.5.0"
   },
   "devDependencies": {
     "tsx": "^4.0.0"
