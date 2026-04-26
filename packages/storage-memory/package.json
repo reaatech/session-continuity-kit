@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@session-continuity-kit/core": "workspace:*",
-    "typescript": "^5.3.0",
+    "typescript": "^6.0.3",
     "vitest": "^3.2.4"
   },
   "publishConfig": {
