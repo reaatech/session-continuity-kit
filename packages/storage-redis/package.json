@@ -45,11 +45,11 @@
   },
   "peerDependencies": {
     "@session-continuity-kit/core": "workspace:*",
-    "redis": "^4.0.0"
+    "redis": "^5.12.1"
   },
   "devDependencies": {
     "@session-continuity-kit/core": "workspace:*",
-    "redis": "^4.0.0",
+    "redis": "^5.12.1",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4"
   },
