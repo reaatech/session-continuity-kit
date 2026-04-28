@@ -5,10 +5,36 @@ updates:
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 10
+    versioning-strategy: increase
     groups:
-      dev-dependencies:
+      dependencies:
         patterns:
           - '*'
+        exclude-patterns:
+          - '@types/*'
+          - '@typescript-eslint/*'
+          - '@vitest/*'
+          - 'eslint'
+          - 'prettier'
+          - 'tsup'
+          - 'turbo'
+          - 'typescript'
+          - 'vitest'
+        update-types:
+          - 'major'
+          - 'minor'
+          - 'patch'
+      dev-dependencies:
+        patterns:
+          - '@types/*'
+          - '@typescript-eslint/*'
+          - '@vitest/*'
+          - 'eslint'
+          - 'prettier'
+          - 'tsup'
+          - 'turbo'
+          - 'typescript'
+          - 'vitest'
         update-types:
           - 'minor'
           - 'patch'
