@@ -180,7 +180,7 @@ export class RedisAdapter implements IStorageAdapter {
         // Fallback to SCAN with client-side filtering
         let cursor = 0;
         do {
-          const result = await this.client.scan(cursor, {
+          const result = await this.client.scan(String(cursor), {
             MATCH: 'session:*',
             COUNT: 100,
           });
@@ -373,7 +373,7 @@ export class RedisAdapter implements IStorageAdapter {
       let cursor = 0;
 
       do {
-        const result = await this.client.scan(cursor, {
+        const result = await this.client.scan(String(cursor), {
           MATCH: 'session:*',
           COUNT: 100,
         });
