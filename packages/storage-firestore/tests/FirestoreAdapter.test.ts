@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FirestoreAdapter } from '../src/FirestoreAdapter.js';
 import type { Session } from '@session-continuity-kit/core';

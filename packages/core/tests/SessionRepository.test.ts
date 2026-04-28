@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SessionRepository } from '../src/repository/SessionRepository.js';
 import { MemoryAdapter } from '../../storage-memory/src/MemoryAdapter.js';

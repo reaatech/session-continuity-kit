@@ -7,7 +7,7 @@ import type {
   SummarizerService,
 } from '../types/compression.js';
 import type { TokenCounter } from '../types/token.js';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { CompressionError } from '../types/errors.js';
 import { preserveSystemMessages } from './CompressionStrategy.js';
 import { SlidingWindowStrategy } from './SlidingWindowStrategy.js';

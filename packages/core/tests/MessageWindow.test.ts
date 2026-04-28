@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import { MessageWindow } from '../src/session/MessageWindow.js';
 import type { Message } from '../src/types/session.js';

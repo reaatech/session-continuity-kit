@@ -29,7 +29,7 @@ import {
   TokenBudgetExceededError,
   HandoffError,
 } from '../types/errors.js';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { SessionEventEmitter } from '../events/SessionEventEmitter.js';
 import { SessionRepository } from '../repository/SessionRepository.js';
 import { MessageWindow } from './MessageWindow.js';
