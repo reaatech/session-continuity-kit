@@ -1119,7 +1119,6 @@ In production, multiple agents or handlers may access the same session concurren
    ```
 
 2. **Adapter-level conditional writes:**
-
    - **Firestore**: Use `update()` with `lastUpdateTime` precondition
    - **DynamoDB**: Use `ConditionExpression: 'version = :expected'` in `UpdateItem`
    - **Redis**: Use `WATCH` + `MULTI/EXEC` transactions
