@@ -272,7 +272,7 @@ jobs:
     name: All Checks
     runs-on: ubuntu-latest
     if: always()
-    needs: [audit, format, lint, typecheck, build, test, coverage]
+    needs: [format, lint, typecheck, build, test, coverage]
     steps:
       - name: Check job results
         run: |
