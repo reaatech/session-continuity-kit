@@ -27,11 +27,11 @@ pnpm add @reaatech/session-continuity-storage-firestore @google-cloud/firestore
 ## Quick Start
 
 ```typescript
-import { FirestoreAdapter } from "@reaatech/session-continuity-storage-firestore";
-import { SessionManager } from "@reaatech/session-continuity";
-import { Firestore } from "@google-cloud/firestore";
+import { FirestoreAdapter } from '@reaatech/session-continuity-storage-firestore';
+import { SessionManager } from '@reaatech/session-continuity';
+import { Firestore } from '@google-cloud/firestore';
 
-const firestore = new Firestore({ projectId: "my-project" });
+const firestore = new Firestore({ projectId: 'my-project' });
 
 const manager = new SessionManager({
   storage: new FirestoreAdapter({ firestore }),
@@ -51,10 +51,10 @@ new FirestoreAdapter(config: FirestoreAdapterConfig)
 
 #### `FirestoreAdapterConfig`
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `firestore` | `Firestore` | (required) | Google Cloud Firestore instance |
-| `ttlField` | `string` | `"expiresAt"` | Field name used for Firestore TTL policy |
+| Property    | Type        | Default       | Description                              |
+| ----------- | ----------- | ------------- | ---------------------------------------- |
+| `firestore` | `Firestore` | (required)    | Google Cloud Firestore instance          |
+| `ttlField`  | `string`    | `"expiresAt"` | Field name used for Firestore TTL policy |
 
 ### Data Model
 
@@ -67,21 +67,21 @@ sessions (collection)
 
 ### Public Methods
 
-| Method | Notes |
-|--------|-------|
-| `createSession(session)` | Auto-generates doc ID; serializes Dates to Firestore Timestamps |
-| `getSession(id)` | — |
-| `updateSession(id, updates)` | Re-reads after update to return current state |
-| `deleteSession(id)` | Batch-deletes all messages (chunks of 500), then deletes session doc |
-| `listSessions(filters?)` | Server-side `where()` for `userId`, `status`, `activeAgentId`; tags filtered client-side (OR semantics); supports `limit` and `offset` |
-| `addMessage(sessionId, message)` | Subcollection doc with auto-generated ID |
-| `getMessages(sessionId, options?)` | Orders by `createdAt`; roles filtered client-side; supports `after`, `before`, `offset`, `limit` |
-| `updateMessage(sessionId, messageId, updates)` | Re-reads after update |
-| `deleteMessage(sessionId, messageId)` | — |
-| `deleteAllMessages(sessionId)` | Batch deletes in chunks of 500 |
-| `getExpiredSessions(before)` | Queries `ttlField < before` |
-| `health()` | Lightweight `limit(1).get()` ping |
-| `close()` | No-op (Firestore manages its own pool) |
+| Method                                         | Notes                                                                                                                                  |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `createSession(session)`                       | Auto-generates doc ID; serializes Dates to Firestore Timestamps                                                                        |
+| `getSession(id)`                               | —                                                                                                                                      |
+| `updateSession(id, updates)`                   | Re-reads after update to return current state                                                                                          |
+| `deleteSession(id)`                            | Batch-deletes all messages (chunks of 500), then deletes session doc                                                                   |
+| `listSessions(filters?)`                       | Server-side `where()` for `userId`, `status`, `activeAgentId`; tags filtered client-side (OR semantics); supports `limit` and `offset` |
+| `addMessage(sessionId, message)`               | Subcollection doc with auto-generated ID                                                                                               |
+| `getMessages(sessionId, options?)`             | Orders by `createdAt`; roles filtered client-side; supports `after`, `before`, `offset`, `limit`                                       |
+| `updateMessage(sessionId, messageId, updates)` | Re-reads after update                                                                                                                  |
+| `deleteMessage(sessionId, messageId)`          | —                                                                                                                                      |
+| `deleteAllMessages(sessionId)`                 | Batch deletes in chunks of 500                                                                                                         |
+| `getExpiredSessions(before)`                   | Queries `ttlField < before`                                                                                                            |
+| `health()`                                     | Lightweight `limit(1).get()` ping                                                                                                      |
+| `close()`                                      | No-op (Firestore manages its own pool)                                                                                                 |
 
 All methods throw `StorageError("firestore")` on failure.
 
@@ -93,7 +93,7 @@ Configure a Firestore TTL policy on the `expiresAt` field (default) to enable na
 // Custom TTL field name
 const adapter = new FirestoreAdapter({
   firestore,
-  ttlField: "deleteAt", // Set a Firestore TTL policy on this field
+  ttlField: 'deleteAt', // Set a Firestore TTL policy on this field
 });
 ```
 

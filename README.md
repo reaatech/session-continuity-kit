@@ -41,28 +41,28 @@ pnpm add @reaatech/session-continuity-storage-redis redis
 ## Quick Start
 
 ```typescript
-import { SessionManager } from "@reaatech/session-continuity";
-import { MemoryAdapter } from "@reaatech/session-continuity-storage-memory";
-import { TiktokenTokenizer } from "@reaatech/session-continuity-tokenizers";
+import { SessionManager } from '@reaatech/session-continuity';
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 
 const manager = new SessionManager({
   storage: new MemoryAdapter(),
-  tokenCounter: new TiktokenTokenizer("gpt-4"),
+  tokenCounter: new TiktokenTokenizer('gpt-4'),
   tokenBudget: {
     maxTokens: 4096,
     reserveTokens: 500,
-    overflowStrategy: "compress",
+    overflowStrategy: 'compress',
   },
   compression: {
-    strategy: "sliding_window",
+    strategy: 'sliding_window',
     targetTokens: 3500,
   },
 });
 
-const session = await manager.createSession({ userId: "user-123" });
+const session = await manager.createSession({ userId: 'user-123' });
 
-await manager.addMessage(session.id, { role: "user", content: "Hello!" });
-await manager.addMessage(session.id, { role: "assistant", content: "Hi! How can I help?" });
+await manager.addMessage(session.id, { role: 'user', content: 'Hello!' });
+await manager.addMessage(session.id, { role: 'assistant', content: 'Hi! How can I help?' });
 
 const context = await manager.getConversationContext(session.id);
 // Returns messages fitted within the token budget
@@ -72,14 +72,14 @@ See the [`examples/`](./examples/) directory for complete working samples, inclu
 
 ## Packages
 
-| Package | Description |
-| ------- | ----------- |
-| [`@reaatech/session-continuity`](./packages/core) | Core types, SessionManager, compression strategies, event system, error classes |
-| [`@reaatech/session-continuity-tokenizers`](./packages/tokenizers) | Token counting: tiktoken (OpenAI), Anthropic, heuristic estimator, auto-select factory |
-| [`@reaatech/session-continuity-storage-memory`](./packages/storage-memory) | In-memory storage adapter for development and testing |
-| [`@reaatech/session-continuity-storage-firestore`](./packages/storage-firestore) | Google Cloud Firestore adapter with TTL support |
-| [`@reaatech/session-continuity-storage-dynamodb`](./packages/storage-dynamodb) | AWS DynamoDB adapter with single-table design |
-| [`@reaatech/session-continuity-storage-redis`](./packages/storage-redis) | Redis adapter with sorted sets and native TTL |
+| Package                                                                          | Description                                                                            |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`@reaatech/session-continuity`](./packages/core)                                | Core types, SessionManager, compression strategies, event system, error classes        |
+| [`@reaatech/session-continuity-tokenizers`](./packages/tokenizers)               | Token counting: tiktoken (OpenAI), Anthropic, heuristic estimator, auto-select factory |
+| [`@reaatech/session-continuity-storage-memory`](./packages/storage-memory)       | In-memory storage adapter for development and testing                                  |
+| [`@reaatech/session-continuity-storage-firestore`](./packages/storage-firestore) | Google Cloud Firestore adapter with TTL support                                        |
+| [`@reaatech/session-continuity-storage-dynamodb`](./packages/storage-dynamodb)   | AWS DynamoDB adapter with single-table design                                          |
+| [`@reaatech/session-continuity-storage-redis`](./packages/storage-redis)         | Redis adapter with sorted sets and native TTL                                          |
 
 ## Storage Adapters
 
@@ -88,7 +88,7 @@ All adapters implement `IStorageAdapter` — swap backends without changing appl
 ### In-Memory (Development/Testing)
 
 ```typescript
-import { MemoryAdapter } from "@reaatech/session-continuity-storage-memory";
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
 
 const adapter = new MemoryAdapter({ ttlMs: 3600000 });
 ```
@@ -96,30 +96,33 @@ const adapter = new MemoryAdapter({ ttlMs: 3600000 });
 ### Firestore
 
 ```typescript
-import { FirestoreAdapter } from "@reaatech/session-continuity-storage-firestore";
-import { Firestore } from "@google-cloud/firestore";
+import { FirestoreAdapter } from '@reaatech/session-continuity-storage-firestore';
+import { Firestore } from '@google-cloud/firestore';
 
-const adapter = new FirestoreAdapter({ firestore: new Firestore({ projectId: "my-project" }) });
+const adapter = new FirestoreAdapter({ firestore: new Firestore({ projectId: 'my-project' }) });
 ```
 
 ### DynamoDB
 
 ```typescript
-import { DynamoDBAdapter } from "@reaatech/session-continuity-storage-dynamodb";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBAdapter } from '@reaatech/session-continuity-storage-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
-const client = DynamoDBDocumentClient.from(new DynamoDBClient({ region: "us-east-1" }));
-const adapter = new DynamoDBAdapter({ client, tableName: "sessions" });
+const client = DynamoDBDocumentClient.from(new DynamoDBClient({ region: 'us-east-1' }));
+const adapter = new DynamoDBAdapter({ client, tableName: 'sessions' });
 ```
 
 ### Redis
 
 ```typescript
-import { RedisAdapter } from "@reaatech/session-continuity-storage-redis";
-import { createClient } from "redis";
+import { RedisAdapter } from '@reaatech/session-continuity-storage-redis';
+import { createClient } from 'redis';
 
-const adapter = new RedisAdapter({ client: createClient({ url: "redis://localhost:6379" }), ttlSeconds: 3600 });
+const adapter = new RedisAdapter({
+  client: createClient({ url: 'redis://localhost:6379' }),
+  ttlSeconds: 3600,
+});
 ```
 
 ## Documentation

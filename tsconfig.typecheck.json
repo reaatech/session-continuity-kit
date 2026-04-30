@@ -5,7 +5,9 @@
     "paths": {
       "@reaatech/session-continuity": ["./packages/core/src/index.ts"],
       "@reaatech/session-continuity-storage-memory": ["./packages/storage-memory/src/index.ts"],
-      "@reaatech/session-continuity-storage-firestore": ["./packages/storage-firestore/src/index.ts"],
+      "@reaatech/session-continuity-storage-firestore": [
+        "./packages/storage-firestore/src/index.ts"
+      ],
       "@reaatech/session-continuity-storage-dynamodb": ["./packages/storage-dynamodb/src/index.ts"],
       "@reaatech/session-continuity-storage-redis": ["./packages/storage-redis/src/index.ts"],
       "@reaatech/session-continuity-tokenizers": ["./packages/tokenizers/src/index.ts"]

@@ -15,7 +15,7 @@ items affect end-user compatibility. **Medium** items are conformity / DX. **Low
 ## Legend
 
 - [ ] = not done
-- ⚠️  = will block publish or break consumers
+- ⚠️ = will block publish or break consumers
 - 🔁 = mechanical change
 - 🧹 = invasive — touches many files
 
@@ -90,7 +90,7 @@ Reference: `packages/core/package.json:20-26` in `a2a-reference-ts`.
 
 ```ts
 // tsup.config.ts
-format: ['cjs', 'esm']
+format: ['cjs', 'esm'];
 ```
 
 ```json
@@ -133,12 +133,12 @@ Applies to all 8 packages.
 `a2a-reference-ts` uses **Biome** for both lint and format (single tool, ~10× faster, no plugin
 config). ABC has the older multi-tool stack:
 
-| Concern | a2a-reference-ts | agent-budget-controller |
-|--|--|--|
-| Lint | `@biomejs/biome` | `eslint` + `@typescript-eslint/*` + `eslint.config.js` |
-| Format | `@biomejs/biome` | `prettier` + `.prettierrc` + `.prettierignore` |
-| Pre-commit | (none) | `husky` + `lint-staged` + `.husky/pre-commit` + `.lintstagedrc.json` |
-| Style metadata | (none) | `.editorconfig` |
+| Concern        | a2a-reference-ts | agent-budget-controller                                              |
+| -------------- | ---------------- | -------------------------------------------------------------------- |
+| Lint           | `@biomejs/biome` | `eslint` + `@typescript-eslint/*` + `eslint.config.js`               |
+| Format         | `@biomejs/biome` | `prettier` + `.prettierrc` + `.prettierignore`                       |
+| Pre-commit     | (none)           | `husky` + `lint-staged` + `.husky/pre-commit` + `.lintstagedrc.json` |
+| Style metadata | (none)           | `.editorconfig`                                                      |
 
 **Migration steps:**
 
@@ -177,14 +177,14 @@ This is invasive but is the single biggest "conformity" win.
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@reaatech/agent-budget-types":             ["./packages/types/src/index.ts"],
-      "@reaatech/agent-budget-pricing":           ["./packages/pricing/src/index.ts"],
-      "@reaatech/agent-budget-spend-tracker":     ["./packages/spend-tracker/src/index.ts"],
-      "@reaatech/agent-budget-engine":            ["./packages/budget-engine/src/index.ts"],
-      "@reaatech/agent-budget-middleware":        ["./packages/middleware/src/index.ts"],
-      "@reaatech/agent-budget-otel-bridge":       ["./packages/otel-bridge/src/index.ts"],
+      "@reaatech/agent-budget-types": ["./packages/types/src/index.ts"],
+      "@reaatech/agent-budget-pricing": ["./packages/pricing/src/index.ts"],
+      "@reaatech/agent-budget-spend-tracker": ["./packages/spend-tracker/src/index.ts"],
+      "@reaatech/agent-budget-engine": ["./packages/budget-engine/src/index.ts"],
+      "@reaatech/agent-budget-middleware": ["./packages/middleware/src/index.ts"],
+      "@reaatech/agent-budget-otel-bridge": ["./packages/otel-bridge/src/index.ts"],
       "@reaatech/agent-budget-llm-router-plugin": ["./packages/llm-router-plugin/src/index.ts"],
-      "@reaatech/agent-budget-cli":               ["./packages/cli/src/index.ts"]
+      "@reaatech/agent-budget-cli": ["./packages/cli/src/index.ts"]
     }
   }
 }
@@ -286,15 +286,15 @@ These exist on disk (left over from composite-mode builds):
 
 ABC's tooling has drifted:
 
-| Dep | a2a-reference-ts | agent-budget-controller | Action |
-|--|--|--|--|
-| `typescript` | `^5.8.3` | `^5.7.2` | bump |
-| `vitest` | `^3.1.1` | `^2.1.8` | **major bump** — review breaking changes |
-| `@vitest/coverage-v8` | `3.2.4` | `^2.1.9` | bump with vitest |
-| `turbo` | `^2.5.0` | `^2.5.0` | ok |
-| `tsup` (per-pkg) | `^8.4.0` | `^8.4.0` | ok |
-| `@changesets/cli` | `^2.28.1` | `^2.27.11` | bump |
-| `@changesets/changelog-github` | `^0.6.0` | `^0.6.0` | ok |
+| Dep                            | a2a-reference-ts | agent-budget-controller | Action                                   |
+| ------------------------------ | ---------------- | ----------------------- | ---------------------------------------- |
+| `typescript`                   | `^5.8.3`         | `^5.7.2`                | bump                                     |
+| `vitest`                       | `^3.1.1`         | `^2.1.8`                | **major bump** — review breaking changes |
+| `@vitest/coverage-v8`          | `3.2.4`          | `^2.1.9`                | bump with vitest                         |
+| `turbo`                        | `^2.5.0`         | `^2.5.0`                | ok                                       |
+| `tsup` (per-pkg)               | `^8.4.0`         | `^8.4.0`                | ok                                       |
+| `@changesets/cli`              | `^2.28.1`        | `^2.27.11`              | bump                                     |
+| `@changesets/changelog-github` | `^0.6.0`         | `^0.6.0`                | ok                                       |
 
 **Action:** `pnpm up -r typescript vitest @vitest/coverage-v8 @changesets/cli` and verify tests still pass.
 
@@ -387,6 +387,7 @@ install (cache) → audit, format, lint, typecheck, build → test (matrix), cov
 ```
 
 The A2A version is heavier but gives:
+
 - Faster signal: lint failures don't wait for build to finish.
 - Discrete required-status-checks for branch protection.
 - A "barrel" `all-checks` job to gate merges on a single check.

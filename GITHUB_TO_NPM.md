@@ -79,13 +79,13 @@ Every package in `packages/*` that you intend to publish must have:
 
 **Why each field matters:**
 
-| Field | Why |
-|---|---|
-| `repository.url` | npm shows "Repository" link on package page; required by GitHub Packages for owner verification. **Must end in `.git`.** npm CLI may auto-correct `https://...github.com/...` to `git+https://...github.com/.../.git` and emit a warning. |
-| `repository.directory` | Tells npm which subdir the package lives in within the monorepo. |
-| `publishConfig.access: "public"` | **Required for scoped packages.** Without this, the first publish silently tries to push as private, which fails on a free account with `402 Payment Required`. |
-| `files: ["dist"]` | Limits the published tarball to the build output. npm always also includes `package.json`, `README*`, `LICENSE*`, `CHANGELOG*` regardless of this list. |
-| `main` / `module` / `types` / `exports` | Standard dual-ESM/CJS shape if you build with tsup. Adjust if you use a different bundler. |
+| Field                                   | Why                                                                                                                                                                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `repository.url`                        | npm shows "Repository" link on package page; required by GitHub Packages for owner verification. **Must end in `.git`.** npm CLI may auto-correct `https://...github.com/...` to `git+https://...github.com/.../.git` and emit a warning. |
+| `repository.directory`                  | Tells npm which subdir the package lives in within the monorepo.                                                                                                                                                                          |
+| `publishConfig.access: "public"`        | **Required for scoped packages.** Without this, the first publish silently tries to push as private, which fails on a free account with `402 Payment Required`.                                                                           |
+| `files: ["dist"]`                       | Limits the published tarball to the build output. npm always also includes `package.json`, `README*`, `LICENSE*`, `CHANGELOG*` regardless of this list.                                                                                   |
+| `main` / `module` / `types` / `exports` | Standard dual-ESM/CJS shape if you build with tsup. Adjust if you use a different bundler.                                                                                                                                                |
 
 > **GOTCHA:** Don't set `repository.url` without `.git` — npm's auto-correction
 > works but pollutes every publish with a warning. Just include `.git` upfront.
@@ -105,6 +105,7 @@ Make sure each `packages/<name>/` contains:
 > tsup misconfigured to write to `src/` instead of `dist/`), purge those stray
 > `*.js` / `*.d.ts` / `*.map` files. They confuse tsup on rebuild and bloat tarballs.
 > Add this to `.gitignore`:
+>
 > ```
 > packages/*/src/**/*.js
 > packages/*/src/**/*.js.map
@@ -161,10 +162,7 @@ The default config is restricted-access (private). Update to:
 ```json
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
-  "changelog": [
-    "@changesets/changelog-github",
-    { "repo": "owner/repo" }
-  ],
+  "changelog": ["@changesets/changelog-github", { "repo": "owner/repo" }],
   "commit": false,
   "fixed": [],
   "linked": [],
@@ -297,12 +295,12 @@ that's `@reaatech/session-continuity-`.
 
 ### 4.2 Permissions explainer
 
-| Permission | Why |
-|---|---|
-| `contents: write` | changesets/action commits version bumps and creates the Version Packages PR |
-| `pull-requests: write` | Same — opening/updating the Version Packages PR |
-| `id-token: write` | Required for npm provenance (OIDC signing) |
-| `packages: write` | Required for the GitHub Packages mirror step |
+| Permission             | Why                                                                         |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `contents: write`      | changesets/action commits version bumps and creates the Version Packages PR |
+| `pull-requests: write` | Same — opening/updating the Version Packages PR                             |
+| `id-token: write`      | Required for npm provenance (OIDC signing)                                  |
+| `packages: write`      | Required for the GitHub Packages mirror step                                |
 
 ---
 
@@ -311,6 +309,7 @@ that's `@reaatech/session-continuity-`.
 ### 5.1 Account state
 
 You publish under a scope. The scope must match either:
+
 - An npm **user** account name (e.g., username `reaatech` → `@reaatech/...`), or
 - An npm **organization** name (created at npmjs.com/org/create — free for unlimited public packages)
 
@@ -356,13 +355,13 @@ for solo maintainers with CI-driven releases.
 Go to https://www.npmjs.com/settings/<username>/tokens → **Generate New Token** →
 **Granular Access Token**.
 
-| Setting | Value |
-|---|---|
-| Token name | `<repo-name> CI` (e.g., `session-continuity-kit CI`) |
-| Expiration | 1 year (set a calendar reminder to rotate) |
-| Allowed IP ranges | Blank |
-| Packages and scopes | **All packages and scopes** with **Read and write** |
-| Bypass 2FA | Leave **unchecked** (only check this if "Require 2FA for write" is on, and that requires an IP allowlist) |
+| Setting             | Value                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| Token name          | `<repo-name> CI` (e.g., `session-continuity-kit CI`)                                                      |
+| Expiration          | 1 year (set a calendar reminder to rotate)                                                                |
+| Allowed IP ranges   | Blank                                                                                                     |
+| Packages and scopes | **All packages and scopes** with **Read and write**                                                       |
+| Bypass 2FA          | Leave **unchecked** (only check this if "Require 2FA for write" is on, and that requires an IP allowlist) |
 
 > **GOTCHA — token scope choice:**
 >
@@ -400,6 +399,7 @@ https://github.com/owner/repo/settings/secrets/actions
 https://github.com/owner/repo/settings/actions
 
 In the **Workflow permissions** section:
+
 - Set radio to **"Read and write permissions"**
 - Check **"Allow GitHub Actions to create and approve pull requests"**
 - Save
@@ -443,6 +443,7 @@ You will publish each package **once** from your local laptop using your full
 account credentials. After that, CI takes over for all subsequent versions.
 
 **Prerequisites:**
+
 - All packages built (`pnpm build`)
 - `git status` clean
 - Logged into npm: `npm whoami` returns your username
@@ -668,6 +669,7 @@ Before declaring "done," confirm:
 ### `404 Not Found - PUT` during CI publish
 
 The token cannot create new packages. Either:
+
 - Token is "Only select packages and scopes" → regenerate with "All packages and scopes"
 - Or this is a brand-new scope and CI cannot bootstrap → do manual first publish
 
@@ -679,6 +681,7 @@ TOTP code or recovery code. Security key alone is not sufficient at the CLI.
 ### `403 You cannot publish over the previously published versions`
 
 That version already exists on npm. Either:
+
 - The previous publish succeeded silently (check with `npm view`)
 - Or you need to bump the version first (`pnpm changeset` + version PR)
 
@@ -717,9 +720,11 @@ the gitignore patterns from section 2.2.
 ### `403 permission_denied: The token provided does not match expected scopes` on GitHub Packages publish
 
 The `gh` token doesn't have `write:packages`. Refresh with:
+
 ```bash
 gh auth refresh -h github.com -s write:packages,read:packages
 ```
+
 This is local-only — CI's `GITHUB_TOKEN` is fine because the workflow's
 `permissions:` block grants `packages: write`.
 
@@ -732,6 +737,7 @@ account/org as the package scope.
 ### GitHub repo sidebar "Packages" section is empty after CI publish
 
 Either:
+
 - The mirror step hasn't run yet — check that the workflow has the
   `Mirror published packages to GitHub Packages` step and `packages: write` in
   permissions

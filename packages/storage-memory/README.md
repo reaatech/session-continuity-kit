@@ -27,8 +27,8 @@ pnpm add @reaatech/session-continuity-storage-memory
 ## Quick Start
 
 ```typescript
-import { MemoryAdapter } from "@reaatech/session-continuity-storage-memory";
-import { SessionManager } from "@reaatech/session-continuity";
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
+import { SessionManager } from '@reaatech/session-continuity';
 
 const adapter = new MemoryAdapter({ ttlMs: 3600000 }); // 1-hour TTL
 
@@ -37,7 +37,7 @@ const manager = new SessionManager({
   tokenCounter: myTokenCounter,
 });
 
-const session = await manager.createSession({ userId: "user-123" });
+const session = await manager.createSession({ userId: 'user-123' });
 ```
 
 ## API Reference
@@ -52,45 +52,45 @@ new MemoryAdapter(config?: MemoryAdapterConfig)
 
 #### `MemoryAdapterConfig`
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `ttlMs` | `number` | — | Simulated TTL in milliseconds. Sessions expire after this period. |
+| Property | Type     | Default | Description                                                       |
+| -------- | -------- | ------- | ----------------------------------------------------------------- |
+| `ttlMs`  | `number` | —       | Simulated TTL in milliseconds. Sessions expire after this period. |
 
 ### Public Methods
 
-| Method | Signature | Notes |
-|--------|-----------|-------|
-| `createSession` | `(session: Omit<Session, "id" \| "createdAt" \| "lastActivityAt">): Promise<Session>` | Auto-generates ID and `expiresAt` from `ttlMs` |
-| `getSession` | `(id: SessionId): Promise<Session \| null>` | Lookup from internal `Map` |
-| `updateSession` | `(id: SessionId, updates: Partial<Session>): Promise<Session>` | Throws `StorageError` if not found; resets TTL timer |
-| `deleteSession` | `(id: SessionId): Promise<void>` | Removes session + messages + clears TTL timer |
-| `listSessions` | `(filters?: SessionFilters): Promise<Session[]>` | Client-side filtering; tags use OR semantics |
-| `addMessage` | `(sessionId: SessionId, message: ...): Promise<Message>` | Auto-generates ID |
-| `getMessages` | `(sessionId: SessionId, options?: MessageQueryOptions): Promise<Message[]>` | Sorted by `createdAt`; supports `roles`, `after`, `before`, `offset`, `limit` |
-| `updateMessage` | `(sessionId: SessionId, messageId: MessageId, updates: Partial<Message>): Promise<Message>` | Throws `StorageError` if not found |
-| `deleteMessage` | `(sessionId: SessionId, messageId: MessageId): Promise<void>` | — |
-| `deleteAllMessages` | `(sessionId: SessionId): Promise<void>` | Clears all messages for a session |
-| `getExpiredSessions` | `(before: Date): Promise<SessionId[]>` | Scans `expiresAt` fields |
-| `health` | `(): Promise<HealthStatus>` | Always `{ status: "healthy", latency: 0 }` |
-| `close` | `(): Promise<void>` | Clears all Maps and timers |
+| Method               | Signature                                                                                   | Notes                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `createSession`      | `(session: Omit<Session, "id" \| "createdAt" \| "lastActivityAt">): Promise<Session>`       | Auto-generates ID and `expiresAt` from `ttlMs`                                |
+| `getSession`         | `(id: SessionId): Promise<Session \| null>`                                                 | Lookup from internal `Map`                                                    |
+| `updateSession`      | `(id: SessionId, updates: Partial<Session>): Promise<Session>`                              | Throws `StorageError` if not found; resets TTL timer                          |
+| `deleteSession`      | `(id: SessionId): Promise<void>`                                                            | Removes session + messages + clears TTL timer                                 |
+| `listSessions`       | `(filters?: SessionFilters): Promise<Session[]>`                                            | Client-side filtering; tags use OR semantics                                  |
+| `addMessage`         | `(sessionId: SessionId, message: ...): Promise<Message>`                                    | Auto-generates ID                                                             |
+| `getMessages`        | `(sessionId: SessionId, options?: MessageQueryOptions): Promise<Message[]>`                 | Sorted by `createdAt`; supports `roles`, `after`, `before`, `offset`, `limit` |
+| `updateMessage`      | `(sessionId: SessionId, messageId: MessageId, updates: Partial<Message>): Promise<Message>` | Throws `StorageError` if not found                                            |
+| `deleteMessage`      | `(sessionId: SessionId, messageId: MessageId): Promise<void>`                               | —                                                                             |
+| `deleteAllMessages`  | `(sessionId: SessionId): Promise<void>`                                                     | Clears all messages for a session                                             |
+| `getExpiredSessions` | `(before: Date): Promise<SessionId[]>`                                                      | Scans `expiresAt` fields                                                      |
+| `health`             | `(): Promise<HealthStatus>`                                                                 | Always `{ status: "healthy", latency: 0 }`                                    |
+| `close`              | `(): Promise<void>`                                                                         | Clears all Maps and timers                                                    |
 
 ## Usage Patterns
 
 ### With SessionManager (TTL + Cleanup)
 
 ```typescript
-import { MemoryAdapter } from "@reaatech/session-continuity-storage-memory";
-import { SessionManager } from "@reaatech/session-continuity";
-import { TiktokenTokenizer } from "@reaatech/session-continuity-tokenizers";
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
+import { SessionManager } from '@reaatech/session-continuity';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 
 const manager = new SessionManager({
   storage: new MemoryAdapter({ ttlMs: 3600000 }),
-  tokenCounter: new TiktokenTokenizer("gpt-4"),
+  tokenCounter: new TiktokenTokenizer('gpt-4'),
   sessionTTL: 3600,
   cleanupInterval: 300, // every 5 minutes
 });
 
-const session = await manager.createSession({ userId: "user-123" });
+const session = await manager.createSession({ userId: 'user-123' });
 // ... session auto-expires after 1 hour ...
 await manager.close(); // clean up timers
 ```
@@ -98,19 +98,19 @@ await manager.close(); // clean up timers
 ### Standalone Use
 
 ```typescript
-import { MemoryAdapter } from "@reaatech/session-continuity-storage-memory";
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
 
 const adapter = new MemoryAdapter();
 
 const session = await adapter.createSession({
-  userId: "test-user",
-  status: "active",
-  metadata: { title: "Test Session" },
+  userId: 'test-user',
+  status: 'active',
+  metadata: { title: 'Test Session' },
   participants: [],
   schemaVersion: 1,
 });
 
-const messages = await adapter.listSessions({ userId: "test-user" });
+const messages = await adapter.listSessions({ userId: 'test-user' });
 
 await adapter.close();
 ```
