@@ -22,7 +22,7 @@ Write user-facing documentation, API references, examples, and README updates.
 Update/create `README.md` with:
 
 - Project overview and key features
-- Installation (`pnpm add @session-continuity-kit/core` etc.)
+- Installation (`pnpm add @reaatech/session-continuity` etc.)
 - Quick start with `MemoryAdapter`
 - Storage adapters overview (table of supported backends)
 - Compression strategies overview

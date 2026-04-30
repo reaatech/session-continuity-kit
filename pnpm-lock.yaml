@@ -48,13 +48,13 @@ importers:
 
   examples/agent-handoff:
     dependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-memory':
+      '@reaatech/session-continuity-storage-memory':
         specifier: workspace:*
         version: link:../../packages/storage-memory
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
     devDependencies:
@@ -64,13 +64,13 @@ importers:
 
   examples/basic-usage:
     dependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-memory':
+      '@reaatech/session-continuity-storage-memory':
         specifier: workspace:*
         version: link:../../packages/storage-memory
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
     devDependencies:
@@ -80,13 +80,13 @@ importers:
 
   examples/with-compression:
     dependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-memory':
+      '@reaatech/session-continuity-storage-memory':
         specifier: workspace:*
         version: link:../../packages/storage-memory
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
     devDependencies:
@@ -102,13 +102,13 @@ importers:
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.1037.0
         version: 3.1038.0(@aws-sdk/client-dynamodb@3.1038.0)
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-dynamodb':
+      '@reaatech/session-continuity-storage-dynamodb':
         specifier: workspace:*
         version: link:../../packages/storage-dynamodb
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
     devDependencies:
@@ -121,13 +121,13 @@ importers:
       '@google-cloud/firestore':
         specifier: ^8.5.0
         version: 8.5.0
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-firestore':
+      '@reaatech/session-continuity-storage-firestore':
         specifier: workspace:*
         version: link:../../packages/storage-firestore
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
     devDependencies:
@@ -137,13 +137,13 @@ importers:
 
   examples/with-redis:
     dependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../../packages/core
-      '@session-continuity-kit/storage-redis':
+      '@reaatech/session-continuity-storage-redis':
         specifier: workspace:*
         version: link:../../packages/storage-redis
-      '@session-continuity-kit/tokenizers':
+      '@reaatech/session-continuity-tokenizers':
         specifier: workspace:*
         version: link:../../packages/tokenizers
       redis:
@@ -171,7 +171,7 @@ importers:
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.1037.0
         version: 3.1038.0(@aws-sdk/client-dynamodb@3.1038.0)
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../core
       typescript:
@@ -186,7 +186,7 @@ importers:
       '@google-cloud/firestore':
         specifier: ^8.5.0
         version: 8.5.0
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../core
       typescript:
@@ -198,7 +198,7 @@ importers:
 
   packages/storage-memory:
     devDependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../core
       typescript:
@@ -210,7 +210,7 @@ importers:
 
   packages/storage-redis:
     devDependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../core
       redis:
@@ -229,7 +229,7 @@ importers:
         specifier: ^1.0.22
         version: 1.0.22
     devDependencies:
-      '@session-continuity-kit/core':
+      '@reaatech/session-continuity':
         specifier: workspace:*
         version: link:../core
       typescript:

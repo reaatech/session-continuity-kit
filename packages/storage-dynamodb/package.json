@@ -1,5 +1,5 @@
 {
-  "name": "@session-continuity-kit/storage-dynamodb",
+  "name": "@reaatech/session-continuity-storage-dynamodb",
   "version": "0.1.0",
   "description": "DynamoDB storage adapter for session-continuity-kit",
   "type": "module",
@@ -25,14 +25,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
@@ -45,12 +40,12 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@session-continuity-kit/core": "workspace:*",
+    "@reaatech/session-continuity": "workspace:*",
     "@aws-sdk/client-dynamodb": "^3.1037.0",
     "@aws-sdk/lib-dynamodb": "^3.1037.0"
   },
   "devDependencies": {
-    "@session-continuity-kit/core": "workspace:*",
+    "@reaatech/session-continuity": "workspace:*",
     "@aws-sdk/client-dynamodb": "^3.1037.0",
     "@aws-sdk/lib-dynamodb": "^3.1037.0",
     "typescript": "^6.0.3",
@@ -60,6 +55,6 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

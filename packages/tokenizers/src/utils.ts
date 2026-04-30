@@ -1,4 +1,4 @@
-import type { MessageContent } from '@session-continuity-kit/core';
+import type { MessageContent } from '@reaatech/session-continuity';
 
 /**
  * Extract text-only content from a MessageContent value.

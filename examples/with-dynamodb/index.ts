@@ -1,6 +1,6 @@
-import { SessionManager } from '@session-continuity-kit/core';
-import { DynamoDBAdapter } from '@session-continuity-kit/storage-dynamodb';
-import { TiktokenTokenizer } from '@session-continuity-kit/tokenizers';
+import { SessionManager } from '@reaatech/session-continuity';
+import { DynamoDBAdapter } from '@reaatech/session-continuity-storage-dynamodb';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 

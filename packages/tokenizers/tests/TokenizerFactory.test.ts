@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TokenizerFactory } from '../src/TokenizerFactory.js';
 import { TiktokenTokenizer } from '../src/TiktokenTokenizer.js';
 import { EstimateTokenizer } from '../src/EstimateTokenizer.js';
-import type { TokenCounter } from '@session-continuity-kit/core';
+import type { TokenCounter } from '@reaatech/session-continuity';
 
 describe('TokenizerFactory', () => {
   it('creates TiktokenTokenizer for OpenAI models', () => {

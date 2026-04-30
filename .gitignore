@@ -12,3 +12,7 @@ coverage/
 .claude/
 .idea/
 DEV_PLAN.md
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map

@@ -7,8 +7,8 @@ import type {
   SessionFilters,
   MessageQueryOptions,
   HealthStatus,
-} from '@session-continuity-kit/core';
-import { StorageError } from '@session-continuity-kit/core';
+} from '@reaatech/session-continuity';
+import { StorageError } from '@reaatech/session-continuity';
 import type { Firestore, Query } from '@google-cloud/firestore';
 
 /**

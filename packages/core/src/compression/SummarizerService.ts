@@ -1,6 +1,6 @@
 import type { Message, SummarizerService } from '../types/index.js';
 
-export { SummarizerService };
+export type { SummarizerService };
 
 /**
  * Mock implementation of {@link SummarizerService} for testing.

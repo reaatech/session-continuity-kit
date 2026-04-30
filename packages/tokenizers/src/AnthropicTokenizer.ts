@@ -1,5 +1,5 @@
-import type { TokenCounter } from '@session-continuity-kit/core';
-import type { Message } from '@session-continuity-kit/core';
+import type { TokenCounter } from '@reaatech/session-continuity';
+import type { Message } from '@reaatech/session-continuity';
 import { createRequire } from 'node:module';
 import { extractTextFromContent } from './utils.js';
 

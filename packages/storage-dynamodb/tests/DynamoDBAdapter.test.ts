@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DynamoDBAdapter } from '../src/DynamoDBAdapter.js';
-import type { Session } from '@session-continuity-kit/core';
+import type { Session } from '@reaatech/session-continuity';
 
 describe('DynamoDBAdapter', () => {
   let adapter: DynamoDBAdapter;

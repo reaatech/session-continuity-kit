@@ -10,100 +10,273 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 22
+
 jobs:
-  lint-format:
+  # ─────────────────────────────────────────────
+  # Setup & Install
+  # ─────────────────────────────────────────────
+  install:
+    name: Install Dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Use Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+      - name: Save pnpm store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+
+  # ─────────────────────────────────────────────
+  # Security Audit
+  # ─────────────────────────────────────────────
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level high
+
+  # ─────────────────────────────────────────────
+  # Code Format Check
+  # ─────────────────────────────────────────────
+  format:
+    name: Code Format
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Check formatting
         run: pnpm format:check
 
-  typecheck:
+  # ─────────────────────────────────────────────
+  # Lint
+  # ─────────────────────────────────────────────
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    needs: install
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Use Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Build
-        run: pnpm build
+      - name: Lint
+        run: pnpm lint
+
+  # ─────────────────────────────────────────────
+  # Type Check (workspace-level, via tsconfig.typecheck.json)
+  # ─────────────────────────────────────────────
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Type check
         run: pnpm type-check
 
-  test:
+  # ─────────────────────────────────────────────
+  # Build
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
     runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Build packages
+        run: pnpm build
+
+  # ─────────────────────────────────────────────
+  # Test (matrix)
+  # ─────────────────────────────────────────────
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: build
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: ['20', '22']
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Test
         run: pnpm test
 
-  build:
+  # ─────────────────────────────────────────────
+  # Coverage
+  # ─────────────────────────────────────────────
+  coverage:
+    name: Coverage
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Use Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Build
-        run: pnpm build
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+  # ─────────────────────────────────────────────
+  # All Checks (barrel job for branch protection)
+  # ─────────────────────────────────────────────
+  all-checks:
+    name: All Checks
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [audit, format, lint, typecheck, build, test, coverage]
+    steps:
+      - name: Check job results
+        run: |
+          cat <<'JSON' > /tmp/needs.json
+          ${{ toJson(needs) }}
+          JSON
+          jq -e 'to_entries | map(select(.value.result != "success" and .value.result != "skipped")) | length == 0' /tmp/needs.json

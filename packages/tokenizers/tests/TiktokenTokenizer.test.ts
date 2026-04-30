@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TiktokenTokenizer } from '../src/TiktokenTokenizer.js';
-import type { Message } from '@session-continuity-kit/core';
+import type { Message } from '@reaatech/session-continuity';
 
 describe('TiktokenTokenizer', () => {
   it('counts tokens in a string', () => {

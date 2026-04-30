@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      '@session-continuity-kit/core': path.resolve(__dirname, 'src/index.ts'),
+      '@reaatech/session-continuity': path.resolve(__dirname, 'src/index.ts'),
     },
   },
   test: {

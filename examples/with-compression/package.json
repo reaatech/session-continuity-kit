@@ -1,5 +1,5 @@
 {
-  "name": "@session-continuity-kit/example-with-compression",
+  "name": "@reaatech/session-continuity-example-with-compression",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,9 +7,9 @@
     "start": "tsx index.ts"
   },
   "dependencies": {
-    "@session-continuity-kit/core": "workspace:*",
-    "@session-continuity-kit/storage-memory": "workspace:*",
-    "@session-continuity-kit/tokenizers": "workspace:*"
+    "@reaatech/session-continuity": "workspace:*",
+    "@reaatech/session-continuity-storage-memory": "workspace:*",
+    "@reaatech/session-continuity-tokenizers": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.0.0"

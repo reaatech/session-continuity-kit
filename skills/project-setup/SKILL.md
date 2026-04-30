@@ -55,7 +55,7 @@ packages/
 
 Each package must have:
 
-- `package.json` with correct `name` (`@session-continuity-kit/<name>`)
+- `package.json` with correct `name` (`@reaatech/session-continuity[-suffix]`)
 - `tsconfig.json` extending `../../tsconfig.base.json`
 - `src/index.ts` (can be empty initially)
 
