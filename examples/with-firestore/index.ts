@@ -1,6 +1,6 @@
-import { SessionManager } from '@session-continuity-kit/core';
-import { FirestoreAdapter } from '@session-continuity-kit/storage-firestore';
-import { TiktokenTokenizer } from '@session-continuity-kit/tokenizers';
+import { SessionManager } from '@reaatech/session-continuity';
+import { FirestoreAdapter } from '@reaatech/session-continuity-storage-firestore';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 import { Firestore } from '@google-cloud/firestore';
 
 async function main() {

@@ -1,4 +1,4 @@
-import type { TokenCounter, Logger } from '@session-continuity-kit/core';
+import type { TokenCounter, Logger } from '@reaatech/session-continuity';
 import { createRequire } from 'node:module';
 import { TiktokenTokenizer } from './TiktokenTokenizer.js';
 import { EstimateTokenizer } from './EstimateTokenizer.js';
@@ -98,7 +98,7 @@ export class TokenizerFactory {
             err.message.includes('ERR_MODULE_NOT_FOUND'))
         ) {
           TokenizerFactory.logger.warn(
-            `[@session-continuity-kit/tokenizers] '@anthropic-ai/tokenizer' is not installed; ` +
+            `[@reaatech/session-continuity-tokenizers] '@anthropic-ai/tokenizer' is not installed; ` +
               `falling back to EstimateTokenizer for model '${model}'. ` +
               `Install the package for accurate counts.`
           );

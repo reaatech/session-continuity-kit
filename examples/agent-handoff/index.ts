@@ -1,6 +1,6 @@
-import { SessionManager } from '@session-continuity-kit/core';
-import { MemoryAdapter } from '@session-continuity-kit/storage-memory';
-import { TiktokenTokenizer } from '@session-continuity-kit/tokenizers';
+import { SessionManager } from '@reaatech/session-continuity';
+import { MemoryAdapter } from '@reaatech/session-continuity-storage-memory';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 
 async function main() {
   const sessionManager = new SessionManager({

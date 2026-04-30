@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { RedisAdapter } from '../src/RedisAdapter.js';
-import type { Session } from '@session-continuity-kit/core';
+import type { Session } from '@reaatech/session-continuity';
 
 function createFailingClient() {
   const error = new Error('Redis down');

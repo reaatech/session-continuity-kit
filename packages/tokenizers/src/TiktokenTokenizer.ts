@@ -1,5 +1,5 @@
-import type { TokenCounter } from '@session-continuity-kit/core';
-import type { Message } from '@session-continuity-kit/core';
+import type { TokenCounter } from '@reaatech/session-continuity';
+import type { Message } from '@reaatech/session-continuity';
 import { extractTextFromContent } from './utils.js';
 import { get_encoding, type Tiktoken, type TiktokenEncoding } from '@dqbd/tiktoken';
 

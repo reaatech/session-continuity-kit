@@ -1,6 +1,6 @@
-import { SessionManager } from '@session-continuity-kit/core';
-import { RedisAdapter } from '@session-continuity-kit/storage-redis';
-import { TiktokenTokenizer } from '@session-continuity-kit/tokenizers';
+import { SessionManager } from '@reaatech/session-continuity';
+import { RedisAdapter } from '@reaatech/session-continuity-storage-redis';
+import { TiktokenTokenizer } from '@reaatech/session-continuity-tokenizers';
 import { createClient } from 'redis';
 
 async function main() {

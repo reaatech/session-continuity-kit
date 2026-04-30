@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EstimateTokenizer } from '../src/EstimateTokenizer.js';
-import type { Message } from '@session-continuity-kit/core';
+import type { Message } from '@reaatech/session-continuity';
 
 describe('EstimateTokenizer', () => {
   it('estimates token count for text', () => {

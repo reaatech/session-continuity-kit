@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { Message } from '@session-continuity-kit/core';
+import type { Message } from '@reaatech/session-continuity';
 
 // Mock node:module createRequire so we can fake the optional peer dependency
 vi.mock('node:module', () => ({

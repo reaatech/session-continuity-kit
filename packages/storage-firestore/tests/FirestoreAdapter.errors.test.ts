@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { FirestoreAdapter } from '../src/FirestoreAdapter.js';
-import type { Session } from '@session-continuity-kit/core';
+import type { Session } from '@reaatech/session-continuity';
 
 function createFailingFirestore() {
   const error = new Error('Firestore down');

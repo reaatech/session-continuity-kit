@@ -8,8 +8,8 @@ import type {
   SessionFilters,
   MessageQueryOptions,
   HealthStatus,
-} from '@session-continuity-kit/core';
-import { StorageError } from '@session-continuity-kit/core';
+} from '@reaatech/session-continuity';
+import { StorageError } from '@reaatech/session-continuity';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 
