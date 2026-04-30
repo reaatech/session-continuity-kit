@@ -276,6 +276,7 @@ jobs:
     steps:
       - name: Check job results
         run: |
-          echo "${{ toJson(needs) }}" | jq -e '
-            to_entries | map(select(.value.result != "success" and .value.result != "skipped")) | length == 0
-          ' > /dev/null
+          cat <<'JSON' > /tmp/needs.json
+          ${{ toJson(needs) }}
+          JSON
+          jq -e 'to_entries | map(select(.value.result != "success" and .value.result != "skipped")) | length == 0' /tmp/needs.json
