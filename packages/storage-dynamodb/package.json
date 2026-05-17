@@ -41,13 +41,13 @@
   },
   "peerDependencies": {
     "@reaatech/session-continuity": "workspace:*",
-    "@aws-sdk/client-dynamodb": "^3.1037.0",
-    "@aws-sdk/lib-dynamodb": "^3.1037.0"
+    "@aws-sdk/client-dynamodb": "^3.1041.0",
+    "@aws-sdk/lib-dynamodb": "^3.1041.0"
   },
   "devDependencies": {
     "@reaatech/session-continuity": "workspace:*",
-    "@aws-sdk/client-dynamodb": "^3.1037.0",
-    "@aws-sdk/lib-dynamodb": "^3.1037.0",
+    "@aws-sdk/client-dynamodb": "^3.1041.0",
+    "@aws-sdk/lib-dynamodb": "^3.1041.0",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4"
   },
