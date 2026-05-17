@@ -10,9 +10,9 @@
     "@reaatech/session-continuity": "workspace:*",
     "@reaatech/session-continuity-storage-firestore": "workspace:*",
     "@reaatech/session-continuity-tokenizers": "workspace:*",
-    "@google-cloud/firestore": "^8.5.0"
+    "@google-cloud/firestore": "^8.6.0"
   },
   "devDependencies": {
-    "tsx": "^4.0.0"
+    "tsx": "^4.22.1"
   }
 }
