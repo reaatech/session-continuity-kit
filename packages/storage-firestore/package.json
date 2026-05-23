@@ -40,7 +40,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@reaatech/session-continuity": "workspace:*",
+    "@reaatech/session-continuity": "workspace:^",
     "@google-cloud/firestore": "^8.6.0"
   },
   "devDependencies": {

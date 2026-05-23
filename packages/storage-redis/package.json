@@ -39,7 +39,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@reaatech/session-continuity": "workspace:*",
+    "@reaatech/session-continuity": "workspace:^",
     "redis": "^5.12.1"
   },
   "devDependencies": {
