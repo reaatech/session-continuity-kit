@@ -39,6 +39,26 @@ export function calculateMessageTokens(message: Message, counter: TokenCounter):
 }
 
 /**
+ * Deterministic chronological comparison of two messages.
+ *
+ * Orders by `createdAt`, breaking ties with the monotonic `sequence` when both
+ * messages carry one (true insertion order), and otherwise by `id`. This keeps
+ * ordering stable and reproducible even when messages share the same
+ * millisecond timestamp — so a user/assistant turn or a tool-call/result pair
+ * never reorders between reads.
+ *
+ * Returns a negative number when `a` precedes `b`, positive when it follows.
+ */
+export function compareMessages(a: Message, b: Message): number {
+  const byTime = a.createdAt.getTime() - b.createdAt.getTime();
+  if (byTime !== 0) return byTime;
+  if (a.sequence !== undefined && b.sequence !== undefined) {
+    return a.sequence - b.sequence;
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
+/**
  * Separate system messages from other messages.
  */
 export function preserveSystemMessages(messages: Message[]): {
@@ -67,10 +87,8 @@ export function fitMessagesWithinBudget(
     0
   );
 
-  // Sort non-system by createdAt descending (newest first)
-  const sortedOthers = [...otherMessages].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  );
+  // Sort non-system newest first (deterministic on same-ms ties)
+  const sortedOthers = [...otherMessages].sort((a, b) => compareMessages(b, a));
 
   const kept: Message[] = [];
   let currentTokens = systemTokens;

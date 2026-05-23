@@ -1,5 +1,6 @@
 export {
   calculateMessageTokens,
+  compareMessages,
   preserveSystemMessages,
   fitMessagesWithinBudget,
 } from './CompressionStrategy.js';

@@ -16,7 +16,7 @@
   "context": {
     "framework": "Vitest",
     "coverageTarget": "100% for core logic",
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md"]
+    "basedOn": ["ARCHITECTURE.md"]
   },
   "tasks": [
     {

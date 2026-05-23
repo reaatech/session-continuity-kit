@@ -14,7 +14,7 @@
     "quality check"
   ],
   "context": {
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "basedOn": ["ARCHITECTURE.md", "AGENTS.md"],
     "standards": [
       "No 'any' types in public API",
       "100% test coverage for core logic",

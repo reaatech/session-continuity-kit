@@ -16,7 +16,7 @@
   "context": {
     "package": "core",
     "directory": "packages/core/src/types",
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md"]
+    "basedOn": ["ARCHITECTURE.md"]
   },
   "tasks": [
     {

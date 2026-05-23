@@ -7,9 +7,10 @@ import type {
   IStorageAdapter,
   SessionFilters,
   MessageQueryOptions,
+  UpdateSessionOptions,
   HealthStatus,
 } from '@reaatech/session-continuity';
-import { StorageError } from '@reaatech/session-continuity';
+import { StorageError, ConcurrencyError } from '@reaatech/session-continuity';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 
@@ -35,6 +36,9 @@ export interface DynamoDBAdapterConfig {
 export class DynamoDBAdapter implements IStorageAdapter {
   private client: DynamoDBDocumentClient;
   private tableName: string;
+  /** State for generating time-sortable, monotonic message ids. */
+  private lastIdMs = 0;
+  private idSubCounter = 0;
 
   constructor(config: DynamoDBAdapterConfig) {
     this.client = config.client;
@@ -118,9 +122,17 @@ export class DynamoDBAdapter implements IStorageAdapter {
    *
    * @param id - Session identifier
    * @param updates - Partial session updates
+   * @param options.expectedVersion - When provided, the write is performed with
+   * a `ConditionExpression` asserting the stored `version` still matches. A
+   * conflicting write is rejected with {@link ConcurrencyError}.
    * @returns The updated session
    */
-  async updateSession(id: SessionId, updates: Partial<Session>): Promise<Session> {
+  async updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session> {
+    const expectedVersion = options?.expectedVersion;
     try {
       const expressionParts: string[] = [];
       const names: Record<string, string> = {};
@@ -164,7 +176,19 @@ export class DynamoDBAdapter implements IStorageAdapter {
         if (!existing) {
           throw new StorageError(`Session not found: ${id}`, 'dynamodb');
         }
+        if (expectedVersion !== undefined && (existing.version ?? 0) !== expectedVersion) {
+          throw new ConcurrencyError(id, expectedVersion, existing.version ?? 0);
+        }
         return existing;
+      }
+
+      // Optimistic concurrency: only apply when the stored version still matches.
+      // Legacy items without a `version` attribute are allowed through.
+      let conditionExpression: string | undefined;
+      if (expectedVersion !== undefined) {
+        names['#cv'] = 'version';
+        values[':cv'] = expectedVersion;
+        conditionExpression = 'attribute_not_exists(#cv) OR #cv = :cv';
       }
 
       const { UpdateCommand } = await import('@aws-sdk/lib-dynamodb');
@@ -178,7 +202,11 @@ export class DynamoDBAdapter implements IStorageAdapter {
           UpdateExpression: `SET ${expressionParts.join(', ')}`,
           ExpressionAttributeNames: names,
           ExpressionAttributeValues: values,
+          ConditionExpression: conditionExpression,
           ReturnValues: 'ALL_NEW',
+          ...(conditionExpression
+            ? { ReturnValuesOnConditionCheckFailure: 'ALL_OLD' as const }
+            : {}),
         })
       );
 
@@ -188,7 +216,29 @@ export class DynamoDBAdapter implements IStorageAdapter {
       }
       return updated;
     } catch (err) {
+      if (err instanceof ConcurrencyError) throw err;
+      if ((err as Error).name === 'ConditionalCheckFailedException') {
+        const actual = await this.resolveActualVersion(id, err);
+        throw new ConcurrencyError(id, expectedVersion ?? -1, actual);
+      }
       throw new StorageError('Failed to update session', 'dynamodb', err as Error);
+    }
+  }
+
+  /**
+   * Best-effort resolution of the stored `version` after a failed conditional
+   * write — from the `ALL_OLD` attributes on the error if present, else a re-read.
+   */
+  private async resolveActualVersion(id: SessionId, err: unknown): Promise<number> {
+    const item = (err as { Item?: Record<string, unknown> }).Item;
+    if (item && typeof item.version === 'number') {
+      return item.version;
+    }
+    try {
+      const existing = await this.getSession(id);
+      return existing?.version ?? -1;
+    } catch {
+      return -1;
     }
   }
 
@@ -313,8 +363,13 @@ export class DynamoDBAdapter implements IStorageAdapter {
     message: Omit<Message, 'id' | 'sessionId' | 'createdAt'>
   ): Promise<Message> {
     try {
-      const id = crypto.randomUUID();
-      const now = new Date().toISOString();
+      const createdAt = new Date();
+      const now = createdAt.toISOString();
+      // Time-sortable, monotonic id. The SK is `MSG#<createdAt>#<id>`, so a
+      // monotonic id orders same-millisecond messages by insertion order rather
+      // than by a random UUID. No shared counter, so no write contention.
+      const id =
+        message.sequence !== undefined ? crypto.randomUUID() : this.nextMessageId(createdAt);
 
       const item = {
         PK: `SESSION#${sessionId}`,
@@ -590,6 +645,27 @@ export class DynamoDBAdapter implements IStorageAdapter {
    */
   async close(): Promise<void> {
     // DynamoDB client is stateless in v3
+  }
+
+  /**
+   * Generate a lexicographically sortable, monotonic message id of the form
+   * `<ms>-<seq>-<rand>`. Because the message SK is `MSG#<createdAt>#<id>`, two
+   * messages written in the same millisecond sort by insertion order (their
+   * `<seq>` differs) instead of by a random UUID. The trailing random segment
+   * keeps ids unique and ordering deterministic across processes. No shared
+   * counter is written, so there is no write contention.
+   */
+  private nextMessageId(now: Date): string {
+    const ms = now.getTime();
+    if (ms === this.lastIdMs) {
+      this.idSubCounter += 1;
+    } else {
+      this.lastIdMs = ms;
+      this.idSubCounter = 0;
+    }
+    const msPart = ms.toString().padStart(15, '0');
+    const seqPart = this.idSubCounter.toString().padStart(6, '0');
+    return `${msPart}-${seqPart}-${crypto.randomUUID()}`;
   }
 
   private serializeSession(

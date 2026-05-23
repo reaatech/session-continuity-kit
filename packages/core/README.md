@@ -18,11 +18,15 @@ pnpm add @reaatech/session-continuity
 
 ## Feature Overview
 
-- **SessionManager** — full session lifecycle: create, update, end, delete; message/participant management; agent handoff; token budget enforcement; context compression
-- **Three compression strategies** — Sliding Window (recent messages), Summarization (LLM-powered summary), Hybrid (recent + summarized history)
+- **SessionManager** — full session lifecycle: create, update, end, delete, list; message create/update/delete; participant management; agent handoff; token budget enforcement; context compression
+- **Three compression strategies** — Sliding Window (recent messages), Summarization (LLM-powered summary), Hybrid (recent + summarized history); summaries are cached on the session and reused while the message set is unchanged, so the LLM-backed summarizer isn't re-invoked on every fetch
+- **Optimistic concurrency** — `expectedVersion` conditional writes and a `ConcurrencyError`; `SessionManager` retries read-modify-write paths on conflict
+- **Deterministic ordering** — messages carry a monotonic `sequence`; the exported `compareMessages` helper orders by `(createdAt, sequence|id)` so same-millisecond writes never reorder
+- **Multi-modal token accounting** — configurable `imageTokenCost` so `image_url` blocks count toward the budget
+- **Budget/compression diagnostics** — `getConversationContextWithStats` reports dropped tokens/messages and whether a summary was served from cache
 - **Typed event system** — subscribe to 14 session lifecycle events (`session:created`, `message:added`, `compression:applied`, `agent:handoff`, etc.)
 - **Storage-agnostic** — the `IStorageAdapter` interface decouples session management from storage; swap backends without changing application code
-- **7 typed error classes** — `SessionNotFoundError`, `TokenBudgetExceededError`, `StorageError`, `CompressionError`, `ValidationError`, `HandoffError`, `SessionError`
+- **8 typed error classes** — `SessionNotFoundError`, `TokenBudgetExceededError`, `StorageError`, `CompressionError`, `ValidationError`, `HandoffError`, `ConcurrencyError`, `SessionError`
 - **Zero runtime dependencies** — lightweight and tree-shakeable
 
 ## Quick Start
@@ -72,6 +76,7 @@ new SessionManager(config: SessionManagerConfig)
 | `tokenCounter`    | `TokenCounter`        | (required) | Token counting implementation                  |
 | `tokenBudget`     | `TokenBudgetConfig`   | —          | Default token budget configuration             |
 | `compression`     | `CompressionConfig`   | —          | Default compression strategy and settings      |
+| `imageTokenCost`  | `number`              | `0`        | Tokens charged per `image_url` content block   |
 | `sessionTTL`      | `number`              | —          | Session TTL in seconds                         |
 | `cleanupInterval` | `number`              | `0`        | Cleanup job interval in seconds (0 = disabled) |
 | `eventEmitter`    | `SessionEventEmitter` | —          | Custom event emitter instance                  |
@@ -79,21 +84,25 @@ new SessionManager(config: SessionManagerConfig)
 
 #### Session Lifecycle
 
-| Method                       | Returns            | Description                                    |
-| ---------------------------- | ------------------ | ---------------------------------------------- |
-| `createSession(options?)`    | `Promise<Session>` | Create a new session                           |
-| `getSession(id)`             | `Promise<Session>` | Retrieve by ID (throws `SessionNotFoundError`) |
-| `updateSession(id, updates)` | `Promise<Session>` | Partial update                                 |
-| `endSession(id)`             | `Promise<void>`    | Mark session as completed                      |
-| `deleteSession(id)`          | `Promise<void>`    | Delete session and all messages                |
+| Method                       | Returns              | Description                                               |
+| ---------------------------- | -------------------- | --------------------------------------------------------- |
+| `createSession(options?)`    | `Promise<Session>`   | Create a new session                                      |
+| `getSession(id)`             | `Promise<Session>`   | Retrieve by ID (throws `SessionNotFoundError`)            |
+| `listSessions(filters?)`     | `Promise<Session[]>` | List sessions (userId, status, agent, tags, date, paging) |
+| `updateSession(id, updates)` | `Promise<Session>`   | Partial update (optimistic-concurrency, retried)          |
+| `endSession(id)`             | `Promise<void>`      | Mark completed (throws `SessionNotFoundError` if missing) |
+| `deleteSession(id)`          | `Promise<void>`      | Delete session and all messages (throws if missing)       |
 
 #### Message Management
 
-| Method                              | Returns              | Description                            |
-| ----------------------------------- | -------------------- | -------------------------------------- |
-| `addMessage(sessionId, message)`    | `Promise<Message>`   | Add a message (enforces token budget)  |
-| `getMessages(sessionId, options?)`  | `Promise<Message[]>` | Query messages with filtering          |
-| `getConversationContext(sessionId)` | `Promise<Message[]>` | Get compressed/fitted messages for LLM |
+| Method                                         | Returns                              | Description                                  |
+| ---------------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| `addMessage(sessionId, message)`               | `Promise<Message>`                   | Add a message (enforces token budget)        |
+| `updateMessage(sessionId, messageId, updates)` | `Promise<Message>`                   | Update a message (recomputes token count)    |
+| `deleteMessage(sessionId, messageId)`          | `Promise<void>`                      | Delete a message (decrements running counts) |
+| `getMessages(sessionId, options?)`             | `Promise<Message[]>`                 | Query messages with filtering                |
+| `getConversationContext(sessionId)`            | `Promise<Message[]>`                 | Get compressed/fitted messages for LLM       |
+| `getConversationContextWithStats(sessionId)`   | `Promise<ConversationContextResult>` | Context plus budget/compression diagnostics  |
 
 #### Participants & Handoff
 
@@ -138,6 +147,10 @@ interface Session<T = Record<string, unknown>> {
   expiresAt?: Date;
   tokenBudget?: TokenBudgetConfig;
   compression?: CompressionConfig;
+  tokenCount?: number; // running total across messages
+  messageCount?: number; // running message count
+  compressionState?: CompressionState; // cached summary + signature
+  version?: number; // optimistic-concurrency token
 }
 ```
 
@@ -150,6 +163,7 @@ interface Message {
   role: 'user' | 'assistant' | 'system' | 'tool';
   content: string | MultiModalContent[];
   tokenCount?: number;
+  sequence?: number; // monotonic per-session insertion order
   metadata?: {
     toolCalls?: ToolCall[];
     toolResults?: ToolResult[];
@@ -197,7 +211,11 @@ The contract all storage adapters implement:
 interface IStorageAdapter {
   createSession(session: Omit<Session, 'id' | 'createdAt' | 'lastActivityAt'>): Promise<Session>;
   getSession(id: SessionId): Promise<Session | null>;
-  updateSession(id: SessionId, updates: Partial<Session>): Promise<Session>;
+  updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions // { expectedVersion } for optimistic concurrency
+  ): Promise<Session>;
   deleteSession(id: SessionId): Promise<void>;
   listSessions(filters?: SessionFilters): Promise<Session[]>;
   addMessage(
@@ -281,6 +299,24 @@ const result = await strategy.compress(
 );
 ```
 
+### Concurrency & Ordering
+
+**Optimistic concurrency.** `SessionManager` reads a session's `version`, writes with that as the `expectedVersion`, and retries on a `ConcurrencyError` so concurrent participant changes, handoffs, and counter updates don't clobber each other. Every adapter enforces the conditional write: in-memory (version check), DynamoDB (`version` `ConditionExpression`), Firestore (`runTransaction`), and Redis (`WATCH`/`MULTI`/`EXEC`).
+
+```typescript
+import { ConcurrencyError } from '@reaatech/session-continuity';
+
+try {
+  await adapter.updateSession(id, { status: 'completed' }, { expectedVersion: session.version });
+} catch (err) {
+  if (err instanceof ConcurrencyError) {
+    // err.expectedVersion / err.actualVersion — re-read and retry
+  }
+}
+```
+
+**Deterministic ordering.** Messages return in stable insertion order even when written in the same millisecond. In-memory and Redis assign a true monotonic `sequence`; DynamoDB and Firestore use time-sortable message ids so their native ordering yields insertion order without a hot-document counter. The exported `compareMessages(a, b)` applies the same `(createdAt, sequence|id)` rule if you sort messages yourself.
+
 ### Event System
 
 ```typescript
@@ -307,25 +343,26 @@ Full event list: `session:created`, `session:updated`, `session:ended`, `session
 
 All errors extend `SessionError` which includes `code: string`, `message: string`, and optional `cause?: Error`.
 
-| Class                      | Code                    | Description                             |
-| -------------------------- | ----------------------- | --------------------------------------- |
-| `SessionError`             | (custom)                | Base class for all session errors       |
-| `SessionNotFoundError`     | `SESSION_NOT_FOUND`     | Requested session does not exist        |
-| `TokenBudgetExceededError` | `TOKEN_BUDGET_EXCEEDED` | Message would exceed the token budget   |
-| `StorageError`             | `STORAGE_ERROR`         | Storage backend error with adapter name |
-| `CompressionError`         | `COMPRESSION_ERROR`     | Compression strategy failure            |
-| `ValidationError`          | `VALIDATION_ERROR`      | Invalid input or state                  |
-| `HandoffError`             | `HANDOFF_ERROR`         | Handoff between agents failed           |
+| Class                      | Code                    | Description                                |
+| -------------------------- | ----------------------- | ------------------------------------------ |
+| `SessionError`             | (custom)                | Base class for all session errors          |
+| `SessionNotFoundError`     | `SESSION_NOT_FOUND`     | Requested session does not exist           |
+| `TokenBudgetExceededError` | `TOKEN_BUDGET_EXCEEDED` | Message would exceed the token budget      |
+| `StorageError`             | `STORAGE_ERROR`         | Storage backend error with adapter name    |
+| `CompressionError`         | `COMPRESSION_ERROR`     | Compression strategy failure               |
+| `ValidationError`          | `VALIDATION_ERROR`      | Invalid input or state                     |
+| `HandoffError`             | `HANDOFF_ERROR`         | Handoff between agents failed              |
+| `ConcurrencyError`         | `CONCURRENCY_CONFLICT`  | Stale conditional write (version mismatch) |
 
 ## Export Inventory
 
 **Classes:** `SessionManager`, `SessionRepository`, `SessionEventEmitter`, `MessageWindow`, `TokenBudget`, `SlidingWindowStrategy`, `SummarizationStrategy`, `HybridStrategy`
 
-**Types/Interfaces:** `Session`, `SessionId`, `SessionStatus`, `SessionMetadata`, `Message`, `MessageId`, `MessageRole`, `MessageContent`, `MessageMetadata`, `Participant`, `TokenBudgetConfig`, `TokenCountResult`, `BudgetStatus`, `TokenCounter`, `CompressionConfig`, `CompressionStrategyType`, `CompressionResult`, `ICompressionStrategy`, `SummarizerService`, `IStorageAdapter`, `SessionFilters`, `MessageQueryOptions`, `HealthStatus`, `SessionEvent`, `SessionEventPayload`, `SessionManagerConfig`, `CreateSessionOptions`, `CreateMessageOptions`, `CreateParticipantOptions`, `HandoffContext`, `Logger`
+**Types/Interfaces:** `Session`, `SessionId`, `SessionStatus`, `SessionMetadata`, `CompressionState`, `Message`, `MessageId`, `MessageRole`, `MessageContent`, `MessageMetadata`, `Participant`, `TokenBudgetConfig`, `TokenCountResult`, `BudgetStatus`, `TokenCounter`, `CompressionConfig`, `CompressionStrategyType`, `CompressionResult`, `ICompressionStrategy`, `SummarizerService`, `IStorageAdapter`, `UpdateSessionOptions`, `SessionFilters`, `MessageQueryOptions`, `HealthStatus`, `SessionEvent`, `SessionEventPayload`, `SessionManagerConfig`, `ConversationContextResult`, `ContextCompressionInfo`, `CreateSessionOptions`, `CreateMessageOptions`, `CreateParticipantOptions`, `HandoffContext`, `Logger`
 
-**Error classes:** `SessionError`, `SessionNotFoundError`, `TokenBudgetExceededError`, `StorageError`, `CompressionError`, `ValidationError`, `HandoffError`
+**Error classes:** `SessionError`, `SessionNotFoundError`, `TokenBudgetExceededError`, `StorageError`, `CompressionError`, `ValidationError`, `HandoffError`, `ConcurrencyError`
 
-**Functions:** `calculateMessageTokens`, `preserveSystemMessages`, `fitMessagesWithinBudget`
+**Functions:** `calculateMessageTokens`, `compareMessages`, `preserveSystemMessages`, `fitMessagesWithinBudget`
 
 ## Related Packages
 

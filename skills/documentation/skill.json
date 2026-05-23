@@ -14,7 +14,7 @@
     "write README"
   ],
   "context": {
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "basedOn": ["ARCHITECTURE.md", "AGENTS.md"],
     "documentationStandard": "All public APIs must have JSDoc with examples"
   },
   "tasks": [

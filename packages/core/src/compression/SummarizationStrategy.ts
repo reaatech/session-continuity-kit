@@ -9,7 +9,11 @@ import type {
 import type { TokenCounter } from '../types/token.js';
 import { randomUUID } from 'node:crypto';
 import { CompressionError } from '../types/errors.js';
-import { calculateMessageTokens, preserveSystemMessages } from './CompressionStrategy.js';
+import {
+  calculateMessageTokens,
+  compareMessages,
+  preserveSystemMessages,
+} from './CompressionStrategy.js';
 
 /**
  * Compression strategy that summarizes older messages using an LLM,
@@ -81,10 +85,8 @@ export class SummarizationStrategy implements ICompressionStrategy {
       0
     );
 
-    // Sort non-system by createdAt ascending (oldest first)
-    const sortedOthers = [...otherMessages].sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-    );
+    // Sort non-system oldest first (deterministic on same-ms ties)
+    const sortedOthers = [...otherMessages].sort(compareMessages);
 
     // Determine how many recent messages to keep
     // We need to leave room for summary + system messages

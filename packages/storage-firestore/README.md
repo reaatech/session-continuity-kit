@@ -22,6 +22,8 @@ pnpm add @reaatech/session-continuity-storage-firestore @google-cloud/firestore
 - **Firestore TTL policies** — native document expiration via a configurable TTL field
 - **Batch operations** — messages deleted in batches of 500 for efficiency
 - **Server-side filtering** — uses Firestore `where()` queries for user, status, and agent filters
+- **Deterministic ordering** — time-sortable, monotonic message document ids so the `(createdAt, __name__)` order yields insertion order even within the same millisecond — no hot-document counter
+- **Optimistic concurrency** — `updateSession` honors `expectedVersion` via `runTransaction`, throwing `ConcurrencyError` on a stale write
 - **No connection management** — `close()` is a no-op (Firestore manages its own connection pool)
 
 ## Quick Start

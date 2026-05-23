@@ -7,9 +7,10 @@ import type {
   IStorageAdapter,
   SessionFilters,
   MessageQueryOptions,
+  UpdateSessionOptions,
   HealthStatus,
 } from '@reaatech/session-continuity';
-import { StorageError } from '@reaatech/session-continuity';
+import { StorageError, ConcurrencyError, compareMessages } from '@reaatech/session-continuity';
 
 /**
  * Configuration for the in-memory storage adapter.
@@ -34,6 +35,8 @@ export class MemoryAdapter implements IStorageAdapter {
   private sessions: Map<SessionId, Session> = new Map();
   private messages: Map<SessionId, Map<MessageId, Message>> = new Map();
   private ttlTimers: Map<SessionId, ReturnType<typeof setTimeout>> = new Map();
+  /** Monotonic message-insertion counter per session, for deterministic ordering. */
+  private sequenceCounters: Map<SessionId, number> = new Map();
 
   constructor(private config: MemoryAdapterConfig = {}) {}
 
@@ -84,13 +87,26 @@ export class MemoryAdapter implements IStorageAdapter {
    *
    * @param id - Session identifier
    * @param updates - Partial session updates
+   * @param options - Optional optimistic-concurrency controls
    * @returns The updated session
    * @throws {StorageError} If session does not exist
+   * @throws {ConcurrencyError} If `expectedVersion` is set and does not match
    */
-  async updateSession(id: SessionId, updates: Partial<Session>): Promise<Session> {
+  async updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session> {
     const existing = this.sessions.get(id);
     if (!existing) {
       throw new StorageError(`Session not found: ${id}`, 'memory');
+    }
+
+    if (options?.expectedVersion !== undefined) {
+      const actual = existing.version ?? 0;
+      if (actual !== options.expectedVersion) {
+        throw new ConcurrencyError(id, options.expectedVersion, actual);
+      }
     }
 
     const updated = { ...existing, ...updates };
@@ -113,6 +129,7 @@ export class MemoryAdapter implements IStorageAdapter {
   async deleteSession(id: SessionId): Promise<void> {
     this.sessions.delete(id);
     this.messages.delete(id);
+    this.sequenceCounters.delete(id);
     this.clearExpiry(id);
   }
 
@@ -168,10 +185,14 @@ export class MemoryAdapter implements IStorageAdapter {
     message: Omit<Message, 'id' | 'sessionId' | 'createdAt'>
   ): Promise<Message> {
     const id = randomUUID();
+    const nextSequence = (this.sequenceCounters.get(sessionId) ?? 0) + 1;
+    this.sequenceCounters.set(sessionId, nextSequence);
     const created: Message = {
       ...message,
       id,
       sessionId,
+      // Honor a caller-supplied sequence (e.g. replays) but default to monotonic.
+      sequence: message.sequence ?? nextSequence,
       createdAt: new Date(),
     };
 
@@ -209,8 +230,8 @@ export class MemoryAdapter implements IStorageAdapter {
       results = results.filter((m) => m.createdAt < before);
     }
 
-    // Sort by createdAt
-    results.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    // Sort chronologically, breaking same-ms ties by insertion sequence
+    results.sort(compareMessages);
 
     if (options?.order === 'desc') {
       results.reverse();
@@ -305,6 +326,7 @@ export class MemoryAdapter implements IStorageAdapter {
   async close(): Promise<void> {
     this.sessions.clear();
     this.messages.clear();
+    this.sequenceCounters.clear();
     for (const timer of this.ttlTimers.values()) {
       clearTimeout(timer);
     }
@@ -315,6 +337,7 @@ export class MemoryAdapter implements IStorageAdapter {
     const timer = setTimeout(() => {
       this.sessions.delete(id);
       this.messages.delete(id);
+      this.sequenceCounters.delete(id);
       this.ttlTimers.delete(id);
     }, ttlMs);
     // Allow the Node process to exit even while a TTL timer is pending.

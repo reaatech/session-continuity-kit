@@ -14,7 +14,7 @@
     "reduce complexity"
   ],
   "context": {
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "AGENTS.md"],
+    "basedOn": ["ARCHITECTURE.md", "AGENTS.md"],
     "principles": [
       "Maintain all existing tests",
       "No behavior changes",

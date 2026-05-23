@@ -15,7 +15,7 @@
     "implement persistence"
   ],
   "context": {
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"],
+    "basedOn": ["ARCHITECTURE.md", "core types"],
     "adapters": [
       {
         "name": "memory",

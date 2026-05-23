@@ -7,7 +7,11 @@ import type {
 } from '../types/compression.js';
 import type { TokenCounter } from '../types/token.js';
 import { CompressionError } from '../types/errors.js';
-import { calculateMessageTokens, preserveSystemMessages } from './CompressionStrategy.js';
+import {
+  calculateMessageTokens,
+  compareMessages,
+  preserveSystemMessages,
+} from './CompressionStrategy.js';
 
 /**
  * Compression strategy that keeps the most recent messages
@@ -53,10 +57,8 @@ export class SlidingWindowStrategy implements ICompressionStrategy {
       0
     );
 
-    // Sort non-system by createdAt descending (newest first)
-    const sortedOthers = [...otherMessages].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+    // Sort non-system newest first (deterministic on same-ms ties)
+    const sortedOthers = [...otherMessages].sort((a, b) => compareMessages(b, a));
 
     const kept: Message[] = [];
     let tokenCount = systemTokens;

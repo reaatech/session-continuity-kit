@@ -6,10 +6,12 @@ import type {
   IStorageAdapter,
   SessionFilters,
   MessageQueryOptions,
+  UpdateSessionOptions,
   HealthStatus,
 } from '@reaatech/session-continuity';
-import { StorageError } from '@reaatech/session-continuity';
+import { StorageError, ConcurrencyError } from '@reaatech/session-continuity';
 import type { Firestore, Query } from '@google-cloud/firestore';
+import { randomUUID } from 'node:crypto';
 
 /**
  * Configuration for the Firestore storage adapter.
@@ -34,6 +36,9 @@ export interface FirestoreAdapterConfig {
 export class FirestoreAdapter implements IStorageAdapter {
   private firestore: Firestore;
   private ttlField: string;
+  /** State for generating time-sortable, monotonic message document IDs. */
+  private lastIdMs = 0;
+  private idSubCounter = 0;
 
   constructor(config: FirestoreAdapterConfig) {
     this.firestore = config.firestore;
@@ -97,20 +102,46 @@ export class FirestoreAdapter implements IStorageAdapter {
    *
    * @param id - Session identifier
    * @param updates - Partial session updates
+   * @param options.expectedVersion - When provided, the update runs inside a
+   * Firestore transaction that re-reads the stored `version` and rejects the
+   * write with {@link ConcurrencyError} if it no longer matches.
    * @returns The updated session
    */
-  async updateSession(id: SessionId, updates: Partial<Session>): Promise<Session> {
+  async updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session> {
+    const expectedVersion = options?.expectedVersion;
     try {
       const docRef = this.firestore.collection('sessions').doc(id);
       const data = this.serializePartialSession(updates);
-      if (Object.keys(data).length === 0) {
-        const existing = await this.getSession(id);
-        if (!existing) {
-          throw new StorageError(`Session not found: ${id}`, 'firestore');
+
+      if (expectedVersion !== undefined) {
+        // Optimistic concurrency: read-check-write atomically in a transaction.
+        await this.firestore.runTransaction(async (tx) => {
+          const snap = await tx.get(docRef);
+          if (!snap.exists) {
+            throw new StorageError(`Session not found: ${id}`, 'firestore');
+          }
+          const actual = (snap.data()?.version as number | undefined) ?? 0;
+          if (actual !== expectedVersion) {
+            throw new ConcurrencyError(id, expectedVersion, actual);
+          }
+          if (Object.keys(data).length > 0) {
+            tx.update(docRef, data);
+          }
+        });
+      } else {
+        if (Object.keys(data).length === 0) {
+          const existing = await this.getSession(id);
+          if (!existing) {
+            throw new StorageError(`Session not found: ${id}`, 'firestore');
+          }
+          return existing;
         }
-        return existing;
+        await docRef.update(data);
       }
-      await docRef.update(data);
 
       const updated = await docRef.get();
       const updatedData = updated.data();
@@ -119,6 +150,7 @@ export class FirestoreAdapter implements IStorageAdapter {
       }
       return this.deserializeSession(updatedData);
     } catch (err) {
+      if (err instanceof ConcurrencyError) throw err;
       throw new StorageError('Failed to update session', 'firestore', err as Error);
     }
   }
@@ -219,13 +251,15 @@ export class FirestoreAdapter implements IStorageAdapter {
     message: Omit<Message, 'id' | 'sessionId' | 'createdAt'>
   ): Promise<Message> {
     try {
+      const now = new Date();
+      // Time-sortable, monotonic id: Firestore's implicit __name__ tie-breaker
+      // then orders same-millisecond messages by insertion order (see nextMessageId).
+      const id = message.sequence !== undefined ? randomUUID() : this.nextMessageId(now);
       const docRef = this.firestore
         .collection('sessions')
         .doc(sessionId)
         .collection('messages')
-        .doc();
-      const id = docRef.id;
-      const now = new Date();
+        .doc(id);
 
       const data = this.serializeMessage({
         ...message,
@@ -245,6 +279,28 @@ export class FirestoreAdapter implements IStorageAdapter {
     } catch (err) {
       throw new StorageError('Failed to add message', 'firestore', err as Error);
     }
+  }
+
+  /**
+   * Generate a lexicographically sortable, monotonic message document id of the
+   * form `<ms>-<seq>-<rand>`. Because `getMessages` orders by `createdAt` and
+   * Firestore appends an implicit `__name__` (document id) tie-breaker, two
+   * messages written in the same millisecond are returned in insertion order
+   * (their `<seq>` differs) rather than arbitrarily. The trailing random segment
+   * keeps ids unique and ordering deterministic across processes. No shared
+   * counter is written, so there is no hot-document contention.
+   */
+  private nextMessageId(now: Date): string {
+    const ms = now.getTime();
+    if (ms === this.lastIdMs) {
+      this.idSubCounter += 1;
+    } else {
+      this.lastIdMs = ms;
+      this.idSubCounter = 0;
+    }
+    const msPart = ms.toString().padStart(15, '0');
+    const seqPart = this.idSubCounter.toString().padStart(6, '0');
+    return `${msPart}-${seqPart}-${randomUUID()}`;
   }
 
   /**

@@ -29,6 +29,13 @@ export interface Message {
   content: MessageContent;
   /** Token count for this message (pre-computed or lazy) */
   tokenCount?: number;
+  /**
+   * Monotonically increasing per-session insertion sequence. Assigned by the
+   * storage adapter on write. Used as a deterministic tie-breaker when two
+   * messages share the same `createdAt` millisecond. Adapters that don't assign
+   * it fall back to `(createdAt, id)` ordering.
+   */
+  sequence?: number;
   /** References to tool calls or other metadata */
   metadata?: MessageMetadata;
   createdAt: Date;
@@ -65,7 +72,33 @@ export interface SessionMetadata<T = Record<string, unknown>> {
 }
 
 import type { TokenBudgetConfig } from './token.js';
-import type { CompressionConfig } from './compression.js';
+import type { CompressionConfig, CompressionStrategyType } from './compression.js';
+
+/**
+ * Cached result of the most recent compression pass. Lets {@link Session}
+ * consumers reuse an expensive (LLM-backed) summary instead of recomputing it
+ * on every context fetch. Invalidated when the underlying message set changes,
+ * detected via {@link CompressionState.signature}.
+ */
+export interface CompressionState {
+  /** Strategy that produced this state. */
+  strategy: CompressionStrategyType;
+  /** Summary text, if the strategy produced one. */
+  summary?: string;
+  /** Token count of the summary message. */
+  summaryTokenCount?: number;
+  /** IDs of the non-system messages kept verbatim alongside the summary, in order. */
+  keptMessageIds: MessageId[];
+  /**
+   * Fingerprint of the message set this state was computed from. When the live
+   * message set produces the same signature, the cached state can be reused.
+   */
+  signature: string;
+  /** Token count of the compressed output. */
+  compressedTokenCount: number;
+  /** When this state was last recomputed. */
+  updatedAt: Date;
+}
 
 /** A conversation session */
 export interface Session<T = Record<string, unknown>> {
@@ -92,6 +125,20 @@ export interface Session<T = Record<string, unknown>> {
   tokenBudget?: TokenBudgetConfig;
   /** Compression configuration */
   compression?: CompressionConfig;
-  /** Reserved for future optimistic concurrency control. Not currently enforced by any adapter. */
+  /**
+   * Running total of tokens across all messages in the session. Maintained
+   * incrementally on add/update/delete so the budget hot path doesn't re-sum
+   * every message. Undefined on sessions created before this field existed.
+   */
+  tokenCount?: number;
+  /** Running count of messages in the session. */
+  messageCount?: number;
+  /** Cached compression result; see {@link CompressionState}. */
+  compressionState?: CompressionState;
+  /**
+   * Optimistic-concurrency token. Incremented on every successful update.
+   * Adapters that support conditional writes (see {@link IStorageAdapter.updateSession})
+   * use it to reject stale writes with a `ConcurrencyError`.
+   */
   version?: number;
 }
