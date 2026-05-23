@@ -576,7 +576,11 @@ export interface IStorageAdapter {
   // Session CRUD
   createSession(session: Omit<Session, 'id' | 'createdAt' | 'lastActivityAt'>): Promise<Session>;
   getSession(id: SessionId): Promise<Session | null>;
-  updateSession(id: SessionId, updates: Partial<Session>): Promise<Session>;
+  updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions // { expectedVersion } — optimistic concurrency
+  ): Promise<Session>;
   deleteSession(id: SessionId): Promise<void>;
   listSessions(filters?: SessionFilters): Promise<Session[]>;
 
@@ -1107,32 +1111,30 @@ In production, multiple agents or handlers may access the same session concurren
 - **Message race**: Two messages added simultaneously may cause budget miscalculations
 - **Update clobbering**: `updateSession` overwrites fields without checking current state
 
-### Strategy
+### Strategy (implemented)
 
-1. **Add `version` to `Session`:**
+1. **`Session.version`** is incremented on every successful update and used as the
+   optimistic-concurrency token.
 
-   ```typescript
-   export interface Session {
-     // ...existing fields
-     version: number;
-   }
-   ```
+2. **Adapter-level conditional writes** — `updateSession` accepts
+   `{ expectedVersion }` and rejects a stale write with `ConcurrencyError`:
+   - **MemoryAdapter**: compare-and-swap on the stored version
+   - **DynamoDB**: `ConditionExpression: 'attribute_not_exists(#v) OR #v = :expected'` on the `version` attribute
+   - **Firestore**: `runTransaction` read-check-write
+   - **Redis**: `WATCH` + `MULTI`/`EXEC` (also treats a null `EXEC` as a conflict)
 
-2. **Adapter-level conditional writes:**
-   - **Firestore**: Use `update()` with `lastUpdateTime` precondition
-   - **DynamoDB**: Use `ConditionExpression: 'version = :expected'` in `UpdateItem`
-   - **Redis**: Use `WATCH` + `MULTI/EXEC` transactions
-   - **MemoryAdapter**: Use simple compare-and-swap
+3. **SessionManager retry logic** — read-modify-write paths (`updateSession`,
+   participant changes, handoff, running-count updates) read the current version,
+   write with `expectedVersion`, and retry on `ConcurrencyError` (up to 5 attempts),
+   re-reading the latest state each time.
 
-3. **SessionManager retry logic:**
-   - On `version mismatch`, re-read session and retry operation
-   - Exponential backoff with jitter
-   - Max 3 retries before throwing `ConcurrencyError`
+### Message ordering
 
-### When to Implement
-
-- **Phase 4 (Advanced Features)**: Add `version` field and conditional writes
-- **Phase 1**: Design `Session` with `version?: number` placeholder so adapters can opt in
+Messages return in stable insertion order even for same-millisecond writes. The
+shared `compareMessages` helper orders by `(createdAt, sequence|id)`. In-memory and
+Redis assign a true monotonic `sequence` (Redis via an atomic `INCR`); DynamoDB and
+Firestore use time-sortable, monotonic message ids so their native sort-key /
+`__name__` ordering yields insertion order without a hot-document counter.
 
 ---
 

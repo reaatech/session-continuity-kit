@@ -23,6 +23,8 @@ pnpm add @reaatech/session-continuity-storage-dynamodb @aws-sdk/client-dynamodb 
 - **Two GSIs** — query by user (GSI1) and by agent + status (GSI2) without full table scans
 - **DynamoDB TTL** — native `expiresAt` as a Unix timestamp attribute for automatic cleanup
 - **Dynamic updates** — `updateSession` builds `UpdateExpression` from changed fields only
+- **Optimistic concurrency** — `updateSession` honors `expectedVersion` via a `version` `ConditionExpression`, throwing `ConcurrencyError` on a stale write
+- **Deterministic ordering** — time-sortable, monotonic message ids in the `MSG#<createdAt>#<id>` sort key, so insertion order is stable even within the same millisecond
 - **Batch operations** — messages deleted in chunks of 25 (DynamoDB batch write limit)
 
 ## Quick Start

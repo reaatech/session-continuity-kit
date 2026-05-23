@@ -16,7 +16,7 @@
   "context": {
     "package": "tokenizers",
     "directory": "packages/tokenizers/src",
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"]
+    "basedOn": ["ARCHITECTURE.md", "core types"]
   },
   "tasks": [
     {

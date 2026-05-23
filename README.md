@@ -10,10 +10,12 @@ Every AI agent system reinvents session management: conversation history windowi
 
 ## Features
 
-- **Session lifecycle** — create, update, end, delete sessions with participants, messages, and metadata
-- **Token budget management** — configurable overflow strategies (truncate, compress, error) with `reserveTokens` for LLM responses
-- **Context compression** — three strategies: Sliding Window (recent messages), Summarization (LLM-powered summary), Hybrid (recent + summarized)
+- **Session lifecycle** — create, update, end, delete, and list sessions with participants, messages, and metadata
+- **Token budget management** — configurable overflow strategies (truncate, compress, error) with `reserveTokens` for LLM responses, a running token/message count, and per-image cost for multi-modal content
+- **Context compression** — three strategies: Sliding Window (recent messages), Summarization (LLM-powered summary), Hybrid (recent + summarized); summaries are cached so the summarizer isn't re-invoked on every fetch
 - **Storage adapters** — Firestore, DynamoDB, Redis, and in-memory backends behind a single `IStorageAdapter` interface
+- **Optimistic concurrency** — version-checked conditional writes on every adapter (`ConcurrencyError`), with automatic retry on conflict
+- **Deterministic ordering** — messages return in stable insertion order even for same-millisecond writes
 - **Agent handoff** — transfer session ownership between agents mid-conversation with context
 - **Event system** — 14 typed session lifecycle events for reactive programming
 - **Token counting** — exact (tiktoken, Anthropic) and heuristic estimators with auto-select factory
@@ -129,7 +131,6 @@ const adapter = new RedisAdapter({
 
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — System design, package relationships, and data flows
 - [`AGENTS.md`](./AGENTS.md) — Coding conventions and AI agent development guide
-- [`DEV_PLAN.md`](./DEV_PLAN.md) — Detailed implementation roadmap
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution workflow and release process
 
 ## Development

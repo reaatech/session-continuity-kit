@@ -22,6 +22,8 @@ pnpm add @reaatech/session-continuity-storage-memory
 - **Implements `IStorageAdapter`** — drop-in replacement for any storage backend
 - **Simulated TTL** — configurable expiration via `setTimeout` timers
 - **Full query support** — client-side filtering for roles, time ranges, pagination
+- **Monotonic ordering** — assigns a per-session `sequence` so messages return in stable insertion order, even within the same millisecond
+- **Optimistic concurrency** — `updateSession` honors `expectedVersion` and throws `ConcurrencyError` on a stale write
 - **Instant health check** — always returns healthy with zero latency
 
 ## Quick Start

@@ -16,7 +16,7 @@
   "context": {
     "package": "core",
     "directory": "packages/core/src/session",
-    "basedOn": ["DEV_PLAN.md", "ARCHITECTURE.md", "core types"]
+    "basedOn": ["ARCHITECTURE.md", "core types"]
   },
   "tasks": [
     {

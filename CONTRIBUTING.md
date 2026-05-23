@@ -337,7 +337,7 @@ class SessionManager {
 
 If you have questions, please:
 
-- Check existing [documentation](./DEV_PLAN.md)
+- Check existing [documentation](./ARCHITECTURE.md)
 - Search [existing issues](https://github.com/reaatech/session-continuity-kit/issues)
 - Start a [discussion](https://github.com/reaatech/session-continuity-kit/discussions)
 

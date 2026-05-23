@@ -53,7 +53,6 @@ session-continuity-kit/
 ├── examples/                    # Runnable examples
 ├── tests/                       # Integration & E2E tests
 ├── skills/                      # Agent skills for development
-├── DEV_PLAN.md                  # Development plan
 ├── ARCHITECTURE.md              # Architecture deep dive
 ├── AGENTS.md                    # This file
 ├── package.json                 # Root workspace config
@@ -288,7 +287,6 @@ pnpm update
 
 ## Resources
 
-- [DEV_PLAN.md](./DEV_PLAN.md) — Detailed development plan
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — Architecture deep dive
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [pnpm Workspace](https://pnpm.io/workspaces)

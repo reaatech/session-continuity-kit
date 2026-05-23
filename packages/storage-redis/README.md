@@ -19,7 +19,8 @@ pnpm add @reaatech/session-continuity-storage-redis redis
 ## Feature Overview
 
 - **Implements `IStorageAdapter`** — drop-in replacement for any storage backend
-- **Sorted set message ordering** — messages scored by `createdAt`; supports `offset`, `limit`, and direction (`asc`/`desc`)
+- **Sorted set message ordering** — messages scored by a monotonic per-session `sequence` (atomic `INCR`), so insertion order is stable even within the same millisecond; supports `offset`, `limit`, and direction (`asc`/`desc`)
+- **Optimistic concurrency** — `updateSession` honors `expectedVersion` via a `WATCH`/`MULTI`/`EXEC` transaction, throwing `ConcurrencyError` on a stale write
 - **Native Redis TTL** — `EXPIRE` applied to session hashes and message keys
 - **User index** — fast user-based lookups via a Redis Set (`user:{userId}:sessions`)
 - **Content type preservation** — round-trips both plain text and structured `MessageContent` correctly
