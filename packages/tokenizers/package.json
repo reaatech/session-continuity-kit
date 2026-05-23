@@ -45,7 +45,7 @@
     "@dqbd/tiktoken": "^1.0.22"
   },
   "peerDependencies": {
-    "@reaatech/session-continuity": "workspace:*",
+    "@reaatech/session-continuity": "workspace:^",
     "@anthropic-ai/tokenizer": "^0.0.1"
   },
   "peerDependenciesMeta": {
