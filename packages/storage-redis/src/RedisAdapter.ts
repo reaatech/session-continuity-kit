@@ -7,9 +7,10 @@ import type {
   IStorageAdapter,
   SessionFilters,
   MessageQueryOptions,
+  UpdateSessionOptions,
   HealthStatus,
 } from '@reaatech/session-continuity';
-import { StorageError } from '@reaatech/session-continuity';
+import { StorageError, ConcurrencyError } from '@reaatech/session-continuity';
 import type { RedisClientType } from 'redis';
 
 /**
@@ -100,12 +101,58 @@ export class RedisAdapter implements IStorageAdapter {
    *
    * @param id - Session identifier
    * @param updates - Partial session updates
+   * @param options.expectedVersion - When provided, the rewrite runs under a
+   * `WATCH`/`MULTI`/`EXEC` optimistic transaction: the stored `version` is
+   * re-checked and a concurrent change rejects the write with
+   * {@link ConcurrencyError}.
    * @returns The updated session
    * @throws {StorageError} If session does not exist
    */
-  async updateSession(id: SessionId, updates: Partial<Session>): Promise<Session> {
+  async updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session> {
+    const expectedVersion = options?.expectedVersion;
+    const sessionKey = `session:${id}`;
+
+    if (expectedVersion !== undefined) {
+      try {
+        // Optimistic lock: WATCH first so EXEC aborts if the key changes under us.
+        await this.client.watch(sessionKey);
+        const existing = await this.getSession(id);
+        if (!existing) {
+          await this.client.unwatch();
+          throw new StorageError(`Session not found: ${id}`, 'redis');
+        }
+        const actual = existing.version ?? 0;
+        if (actual !== expectedVersion) {
+          await this.client.unwatch();
+          throw new ConcurrencyError(id, expectedVersion, actual);
+        }
+
+        const updated = { ...existing, ...updates };
+        const multi = this.client.multi();
+        multi.del(sessionKey);
+        multi.hSet(sessionKey, this.serializeSession(updated));
+        if (this.ttlSeconds) {
+          multi.expire(sessionKey, this.ttlSeconds);
+        }
+        const result = await multi.exec();
+        // node-redis returns null when a watched key was modified mid-transaction.
+        if (result === null) {
+          throw new ConcurrencyError(id, expectedVersion, actual);
+        }
+
+        await this.reindexUser(id, existing, updates);
+        return updated;
+      } catch (err) {
+        if (err instanceof ConcurrencyError) throw err;
+        throw new StorageError('Failed to update session', 'redis', err as Error);
+      }
+    }
+
     try {
-      const sessionKey = `session:${id}`;
       const existing = await this.getSession(id);
       if (!existing) {
         throw new StorageError(`Session not found: ${id}`, 'redis');
@@ -120,19 +167,27 @@ export class RedisAdapter implements IStorageAdapter {
         await this.client.expire(sessionKey, this.ttlSeconds);
       }
 
-      // Update user index if userId changed
-      if (updates.userId !== undefined && updates.userId !== existing.userId) {
-        if (existing.userId) {
-          await this.client.sRem(`user:${existing.userId}:sessions`, id);
-        }
-        if (updates.userId) {
-          await this.client.sAdd(`user:${updates.userId}:sessions`, id);
-        }
-      }
+      await this.reindexUser(id, existing, updates);
 
       return updated;
     } catch (err) {
       throw new StorageError('Failed to update session', 'redis', err as Error);
+    }
+  }
+
+  /** Keep the user→sessions index in sync when a session's userId changes. */
+  private async reindexUser(
+    id: SessionId,
+    existing: Session,
+    updates: Partial<Session>
+  ): Promise<void> {
+    if (updates.userId !== undefined && updates.userId !== existing.userId) {
+      if (existing.userId) {
+        await this.client.sRem(`user:${existing.userId}:sessions`, id);
+      }
+      if (updates.userId) {
+        await this.client.sAdd(`user:${updates.userId}:sessions`, id);
+      }
     }
   }
 
@@ -151,8 +206,9 @@ export class RedisAdapter implements IStorageAdapter {
       // Delete all messages
       await this.deleteAllMessages(id);
 
-      // Delete session hash
+      // Delete session hash and the message-sequence counter
       await this.client.del(`session:${id}`);
+      await this.client.del(`session:${id}:seq`);
     } catch (err) {
       throw new StorageError('Failed to delete session', 'redis', err as Error);
     }
@@ -221,29 +277,38 @@ export class RedisAdapter implements IStorageAdapter {
     try {
       const id = crypto.randomUUID();
       const now = new Date();
+
+      // Monotonic per-session sequence via an atomic counter. Scoring the sorted
+      // set by sequence (not timestamp) gives a deterministic, gap-free insertion
+      // order even when messages land in the same millisecond.
+      const seqKey = `session:${sessionId}:seq`;
+      const sequence = message.sequence ?? Number(await this.client.incr(seqKey));
+
       const created: Message = {
         ...message,
         id,
         sessionId,
+        sequence,
         createdAt: now,
       };
 
       const messagesKey = `session:${sessionId}:messages`;
       const messageKey = `message:${id}`;
 
-      // Add to sorted set (score = timestamp)
+      // Add to sorted set (score = sequence)
       await this.client.zAdd(messagesKey, {
-        score: now.getTime(),
+        score: sequence,
         value: id,
       });
 
       // Store message data
       await this.client.hSet(messageKey, this.serializeMessage(created));
 
-      // Set TTL on message and sorted set if session has TTL
+      // Set TTL on message, sorted set, and the sequence counter if session has TTL
       if (this.ttlSeconds) {
         await this.client.expire(messageKey, this.ttlSeconds);
         await this.client.expire(messagesKey, this.ttlSeconds);
+        await this.client.expire(seqKey, this.ttlSeconds);
       }
 
       return created;
@@ -476,6 +541,7 @@ export class RedisAdapter implements IStorageAdapter {
       // Avoids corrupting plain-text messages that happen to start with '['.
       contentType: isStructured ? 'json' : 'string',
       tokenCount: String(message.tokenCount ?? ''),
+      sequence: String(message.sequence ?? ''),
       metadata: message.metadata ? JSON.stringify(message.metadata) : '',
       createdAt: message.createdAt.toISOString(),
     };
@@ -491,6 +557,7 @@ export class RedisAdapter implements IStorageAdapter {
       role: data.role as Message['role'],
       content,
       tokenCount: data.tokenCount ? Number(data.tokenCount) : undefined,
+      sequence: data.sequence ? Number(data.sequence) : undefined,
       metadata: data.metadata ? JSON.parse(data.metadata) : undefined,
       createdAt: new Date(data.createdAt),
     };

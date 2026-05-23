@@ -17,6 +17,9 @@ function createFailingClient() {
     zAdd: vi.fn(async () => {
       throw error;
     }),
+    incr: vi.fn(async () => {
+      throw error;
+    }),
     zRange: vi.fn(async () => {
       throw error;
     }),

@@ -78,6 +78,11 @@ describe('RedisAdapter', () => {
         return existing ? Array.from(existing) : [];
       }),
       expire: vi.fn(async () => {}),
+      incr: vi.fn(async (key: string) => {
+        const cur = Number(store.get(key)?.value ?? '0') + 1;
+        store.set(key, { value: String(cur) });
+        return cur;
+      }),
       scan: vi.fn(async (_cursor: number, _options?: unknown) => {
         const keys = Array.from(store.keys());
         return { cursor: 0, keys };

@@ -6,4 +6,5 @@ export {
   CompressionError,
   ValidationError,
   HandoffError,
+  ConcurrencyError,
 } from '../types/errors.js';

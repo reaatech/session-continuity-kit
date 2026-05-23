@@ -9,7 +9,7 @@ import type {
 import type { TokenCounter } from '../types/token.js';
 import { randomUUID } from 'node:crypto';
 import { CompressionError } from '../types/errors.js';
-import { preserveSystemMessages } from './CompressionStrategy.js';
+import { compareMessages, preserveSystemMessages } from './CompressionStrategy.js';
 import { SlidingWindowStrategy } from './SlidingWindowStrategy.js';
 
 /**
@@ -86,7 +86,7 @@ export class HybridStrategy implements ICompressionStrategy {
     // Get recent messages to keep as-is
     const maxMessages = config.maxMessages ?? 20;
     const recentMessages = [...otherMessages]
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => compareMessages(b, a))
       .slice(0, maxMessages)
       .reverse(); // Restore chronological order
 

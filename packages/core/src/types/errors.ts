@@ -60,3 +60,22 @@ export class HandoffError extends SessionError {
     this.name = 'HandoffError';
   }
 }
+
+/**
+ * Thrown when a conditional (optimistic-concurrency) session update is rejected
+ * because the stored version no longer matches the expected version — i.e. a
+ * concurrent writer modified the session first.
+ */
+export class ConcurrencyError extends SessionError {
+  constructor(
+    public readonly sessionId: SessionId,
+    public readonly expectedVersion: number,
+    public readonly actualVersion: number
+  ) {
+    super(
+      `Concurrent modification of session ${sessionId}: expected version ${expectedVersion}, found ${actualVersion}`,
+      'CONCURRENCY_CONFLICT'
+    );
+    this.name = 'ConcurrencyError';
+  }
+}

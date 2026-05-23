@@ -14,9 +14,18 @@ export interface IStorageAdapter {
   getSession(id: SessionId): Promise<Session | null>;
 
   /**
-   * Update a session
+   * Update a session.
+   *
+   * @param options.expectedVersion - When provided, the adapter SHOULD perform a
+   * conditional write and throw {@link ConcurrencyError} if the stored
+   * `version` does not match. Adapters that cannot express a conditional write
+   * may ignore it (best-effort); the in-memory adapter enforces it.
    */
-  updateSession(id: SessionId, updates: Partial<Session>): Promise<Session>;
+  updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session>;
 
   /**
    * Delete a session
@@ -74,6 +83,14 @@ export interface IStorageAdapter {
    * Close connection
    */
   close(): Promise<void>;
+}
+
+export interface UpdateSessionOptions {
+  /**
+   * Expected current `version` for optimistic concurrency. If set and the
+   * stored version differs, the adapter throws `ConcurrencyError`.
+   */
+  expectedVersion?: number;
 }
 
 export interface SessionFilters {

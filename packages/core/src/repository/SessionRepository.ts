@@ -1,5 +1,10 @@
 import type { Session, SessionId, Message, MessageId } from '../types/session.js';
-import type { IStorageAdapter, SessionFilters, MessageQueryOptions } from '../types/storage.js';
+import type {
+  IStorageAdapter,
+  SessionFilters,
+  MessageQueryOptions,
+  UpdateSessionOptions,
+} from '../types/storage.js';
 import { ValidationError } from '../types/errors.js';
 
 /**
@@ -44,8 +49,12 @@ export class SessionRepository {
    * @param updates - Partial session updates
    * @returns The updated session
    */
-  async updateSession(id: SessionId, updates: Partial<Session>): Promise<Session> {
-    return this.storage.updateSession(id, updates);
+  async updateSession(
+    id: SessionId,
+    updates: Partial<Session>,
+    options?: UpdateSessionOptions
+  ): Promise<Session> {
+    return this.storage.updateSession(id, updates, options);
   }
 
   /**
