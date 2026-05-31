@@ -13,6 +13,6 @@
     "@google-cloud/firestore": "^8.6.0"
   },
   "devDependencies": {
-    "tsx": "^4.22.1"
+    "tsx": "^4.22.4"
   }
 }

@@ -40,11 +40,11 @@
   },
   "peerDependencies": {
     "@reaatech/session-continuity": "workspace:^",
-    "redis": "^5.12.1"
+    "redis": "^6.0.0"
   },
   "devDependencies": {
     "@reaatech/session-continuity": "workspace:*",
-    "redis": "^5.12.1",
+    "redis": "^6.0.0",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4"
   },
