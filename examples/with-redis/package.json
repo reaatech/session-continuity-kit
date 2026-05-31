@@ -10,9 +10,9 @@
     "@reaatech/session-continuity": "workspace:*",
     "@reaatech/session-continuity-storage-redis": "workspace:*",
     "@reaatech/session-continuity-tokenizers": "workspace:*",
-    "redis": "^5.12.1"
+    "redis": "^6.0.0"
   },
   "devDependencies": {
-    "tsx": "^4.22.1"
+    "tsx": "^4.22.4"
   }
 }
