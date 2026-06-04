@@ -46,7 +46,7 @@
     "@reaatech/session-continuity": "workspace:*",
     "redis": "^6.0.0",
     "typescript": "^6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.0"
   },
   "publishConfig": {
     "access": "public"

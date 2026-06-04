@@ -47,7 +47,7 @@
     "@reaatech/session-continuity": "workspace:*",
     "@google-cloud/firestore": "^8.6.0",
     "typescript": "^6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.0"
   },
   "publishConfig": {
     "access": "public"
